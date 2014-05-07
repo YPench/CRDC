@@ -1,0 +1,462 @@
+// Microsoft Visual C++ generated resource script.
+//
+#include "resource.h"
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#ifndef APSTUDIO_INVOKED
+#include "targetver.h"
+#endif
+#include "afxres.h"
+
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+// Chinese (P.R.C.) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_CHS)
+#ifdef _WIN32
+LANGUAGE LANG_CHINESE, SUBLANG_CHINESE_SIMPLIFIED
+#pragma code_page(936)
+#endif //_WIN32
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE 
+BEGIN
+    "resource.h\0"
+END
+
+2 TEXTINCLUDE 
+BEGIN
+    "#ifndef APSTUDIO_INVOKED\r\n"
+    "#include ""targetver.h""\r\n"
+    "#endif\r\n"
+    "#include ""afxres.h""\r\n"
+    "\0"
+END
+
+3 TEXTINCLUDE 
+BEGIN
+    "#define _AFX_NO_SPLITTER_RESOURCES\r\n"
+    "#define _AFX_NO_OLE_RESOURCES\r\n"
+    "#define _AFX_NO_TRACKER_RESOURCES\r\n"
+    "#define _AFX_NO_PROPERTY_RESOURCES\r\n"
+    "\r\n"
+    "#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)\r\n"
+    "LANGUAGE 9, 1\r\n"
+    "#pragma code_page(1252)\r\n"
+    "#include ""res\\Consensus.rc2""  // non-Microsoft Visual C++ edited resources\r\n"
+    "#include ""afxres.rc""     // Standard components\r\n"
+    "#endif\r\n"
+    "\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Icon
+//
+
+// Icon with lowest ID value placed first to ensure application icon
+// remains consistent on all systems.
+IDR_MAINFRAME           ICON                    "res\\Consensus.ico"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_CEDT DIALOGEX 0, 0, 435, 208
+STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_VISIBLE | WS_SYSMENU
+FONT 10, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    PUSHBUTTON      "ACE Corpus Training and Testing",IDC_ACE_TRAIN_TEST,227,13,196,14
+    CONTROL         "",IDC_CEDT_CANDIT_ITE,"RichEdit20W",WS_BORDER | WS_TABSTOP | 0x80,186,92,18,14,WS_EX_RIGHT
+    LTEXT           "Candit Ite:",IDC_STATIC,150,94,36,8
+    GROUPBOX        "TYPE",IDC_STATIC,8,7,202,23
+    CONTROL         "Named Entity Detection",IDC_RADIO_NE_DETECTION,"Button",BS_AUTORADIOBUTTON,16,16,91,10
+    CONTROL         "Named Entity Recognition",IDC_NE_RECOGNITION_RADIO,
+                    "Button",BS_AUTORADIOBUTTON,113,16,94,10
+    GROUPBOX        "Feature Set",IDC_STATIC,8,114,202,48
+    CONTROL         "Generate Words Feature",IDC_CEDT_WORDS_F,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,126,97,10
+    CONTROL         "Generate Info File",IDC_CEDT_GEN_INFO,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,16,78,74,10
+    PUSHBUTTON      "Reset CEDT",IDC_RESET_CEDT,6,187,202,14
+    CONTROL         "Det START",IDC_CHECK_START,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,16,52,52,10
+    CONTROL         "Det END",IDC_CHECK_END,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,113,52,42,10
+    PUSHBUTTON      "Boundary Result Analyser",IDC_BUTTON_ANALYSIZE_BOUNDARY_RET,7,168,97,14
+    CONTROL         "Generate Characters Feature",IDC_CEDT_CHAR_CHECK,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,138,111,10
+    CONTROL         "Generate n-gram Feature",IDC_CEDT_N_GRAM_CHECK,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,149,99,10
+    PUSHBUTTON      "Open Result History",IDC_OPEN_RET_HISTORY,120,168,90,14
+    GROUPBOX        "Configure",IDC_STATIC,8,31,202,76
+    CONTROL         "Extend",IDC_CEDT_EXTEND,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,16,40,38,10
+    CONTROL         "Head",IDC_CEDT_HEAD,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,113,39,33,10
+    CONTROL         "",IDC_CEDT_SENT_INPUT,"RichEdit20W",WS_BORDER | WS_VSCROLL | WS_TABSTOP | 0x44,229,122,195,61,WS_EX_ACCEPTFILES
+    CONTROL         "",IDC_CEDT_BOUND_ITE,"RichEdit20W",WS_BORDER | WS_TABSTOP | 0x80,124,92,18,14
+    CONTROL         "",IDC_CEDT_N_GRAM,"RichEdit20W",WS_BORDER | WS_TABSTOP | 0x80,59,92,18,14
+    LTEXT           "n-Gross Eval:",IDC_STATIC,13,94,44,8
+    LTEXT           "Bound Ite:",IDC_STATIC,87,94,35,8
+    PUSHBUTTON      "Recognition",IDC_CEDT_SENT_RECOG,302,186,56,14
+    PUSHBUTTON      "Detection",IDC_CEDT_SENT_DET,229,186,62,14
+    PUSHBUTTON      "Training Models",IDC_CEDT_TRAININT_MODELS,227,31,55,14
+    PUSHBUTTON      "Loading Models",IDC_CEDT_LOAD_MODELS,228,84,195,14
+    PUSHBUTTON      "Recognize Doc",IDC_CEDT_DOC_RECOG,229,104,52,14
+    GROUPBOX        "Setences and Documents Recognition",IDC_STATIC,221,73,205,128
+    PUSHBUTTON      "Testing Models",IDC_CEDT_TESTING_MODEL,227,50,53,14
+    CONTROL         "",IDC_RICHEDIT21,"RichEdit20W",WS_BORDER | WS_TABSTOP | 0x80,288,32,120,14
+    CONTROL         "",IDC_RICHEDIT22,"RichEdit20W",WS_BORDER | WS_TABSTOP | 0x80,287,50,119,14
+    PUSHBUTTON      "Set",IDC_CEDT_SET_TRAININT_PATH,407,32,16,14
+    PUSHBUTTON      "Set",IDC_CEDT_SET_TEST_PATH,406,50,16,14
+    CONTROL         "Auto Load Models",IDC_CEDT_AUTO_LOAD_MODEL,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,16,65,74,10
+    CONTROL         "Forbid Rewrite Models",IDC_CEDT_FORBID_MODEL,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,113,66,89,10
+    CONTROL         "",IDC_CEDT_DOC_PATH,"RichEdit20W",WS_BORDER | WS_TABSTOP | 0x80,286,104,117,14
+    PUSHBUTTON      "Set",IDC_CEDT_SET_RECOG_DOC,405,104,16,14
+    PUSHBUTTON      "Remount",IDC_CEDT_SENT_CLEAR,368,186,57,14
+END
+
+IDD_CRDC DIALOGEX 0, 0, 432, 208
+STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_SYSMENU
+FONT 10, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    GROUPBOX        "Relation Type",IDC_STATIC,7,9,194,20
+    CONTROL         "TYPE",IDC_TYPE,"Button",BS_AUTORADIOBUTTON,8,16,32,10
+    CONTROL         "SUBTYPE",IDC_SUBTYPE,"Button",BS_AUTORADIOBUTTON,120,16,45,10
+    GROUPBOX        "Feature Set",IDC_STATIC,7,28,194,59
+    CONTROL         "Entity Subtype",IDC_ENTITY_SUBTYPE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,36,72,10
+    CONTROL         "Poaitional Structure",IDC_POSITIONAL_STRUCTURE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,120,36,78,10
+    CONTROL         "By LCWCC",IDC_LCWCC,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,120,97,48,10
+    CONTROL         "Soft Constraint",IDC_SOFT_CONSTRAINT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,120,62,76,10
+    CONTROL         "Omni-words",IDC_OMNI_WORD,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,62,56,10
+    CONTROL         "All Feature",IDC_ALL_FEATURE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,120,74,60,10
+    GROUPBOX        "Lexicon Set",IDC_STATIC,7,88,194,34
+    CONTROL         "By ICTCLAS",IDC_ICTCLAS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,97,56,10
+    CONTROL         "Entity Head",IDC_ENTITY_HEAD,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,50,72,10
+    CONTROL         "From Internet",IDC_INTERNET,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,110,68,10
+    CONTROL         "All Lexicon",IDC_ALL_LEXICON,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,120,110,60,10
+    CONTROL         "By Segmentation",IDC_SEGMENTATION,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,159,76,10
+    CONTROL         "Generate ICTCLAS Lexicon",IDC_GEN_ICTCLAS_LEXICON,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,224,18,99,10
+    CONTROL         "Relation Case Chech",IDC_CASE_CHECK,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,339,18,78,10
+    LTEXT           "Iterate:",IDC_STATIC,157,159,28,8
+    CONTROL         "",IDC_ITERATOR_TIME,"RichEdit20W",ES_AUTOHSCROLL | WS_BORDER | WS_TABSTOP,182,157,17,14,WS_EX_RTLREADING
+    PUSHBUTTON      "Stop",IDC_CRDC_STOP,7,171,195,14
+    PUSHBUTTON      "Generate Training Case",IDC_TRAINING_CASE,7,126,195,14
+    PUSHBUTTON      "Start Training",IDC_START_TRAINING,7,142,195,14
+    PUSHBUTTON      "ACE Corpus Parse",IDC_XML_PARSE,223,31,202,14
+    PUSHBUTTON      "Generate Relation Case",IDC_RELATION_CASE,223,49,202,14
+    GROUPBOX        "Generating Relation Cases",IDC_STATIC,216,8,209,61
+    PUSHBUTTON      "RDC for English",IDC_RDC_FOR_ENGLISH,7,187,194,14
+    CONTROL         "Entity Class",IDC_ENTITY_CLASS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,120,49,53,10
+    LTEXT           "N-Gross Eval:",IDC_STATIC,82,160,45,8
+    CONTROL         "",IDC_CRDC_nCROSS,"RichEdit20W",ES_AUTOHSCROLL | WS_BORDER | WS_TABSTOP,128,157,19,14
+    CONTROL         "",IDC_RICHEDIT21,"RichEdit20W",ES_AUTOHSCROLL | WS_BORDER | WS_TABSTOP,231,181,40,14
+    CONTROL         "",IDC_RICHEDIT22,"RichEdit20W",ES_AUTOHSCROLL | WS_BORDER | WS_TABSTOP,276,181,40,14
+    CONTROL         "",IDC_RICHEDIT24,"RichEdit20W",ES_AUTOHSCROLL | WS_BORDER | WS_TABSTOP,338,181,40,14
+    CONTROL         "",IDC_RICHEDIT25,"RichEdit20W",ES_AUTOHSCROLL | WS_BORDER | WS_TABSTOP,382,181,40,14
+    CONTROL         "",IDC_CRDC_INPUT,"RichEdit20W",ES_AUTOHSCROLL | WS_BORDER | WS_TABSTOP,225,102,200,64
+    PUSHBUTTON      "Load Model",IDC_CRDC_LOAD_MODEL,223,85,58,14
+    PUSHBUTTON      "Recognition",IDC_CRDC_RECOGNITION,295,85,57,14
+    PUSHBUTTON      "Training",IDC_CRDC_TRAININT,369,85,56,14
+    GROUPBOX        "Entity Mention 1",IDC_STATIC,226,169,95,30
+    GROUPBOX        "Entity Mention 2",IDC_STATIC,334,169,91,30
+    GROUPBOX        "Relation Recognition",IDC_STATIC,216,72,209,130
+END
+
+IDD_CONVENTION DIALOGEX 0, 0, 430, 205
+STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_SYSMENU
+FONT 10, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    GROUPBOX        "命名实体识别",IDC_STATIC,7,10,416,23
+    GROUPBOX        "文化指纹识别",IDC_STATIC,7,36,416,26
+    GROUPBOX        "关系识别",IDC_STATIC,8,65,416,25
+    GROUPBOX        "热度识别",IDC_STATIC,7,92,416,29
+    CONTROL         "人名",IDC_CHECK1,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,9,20,33,10
+    CONTROL         "地名",IDC_CHECK2,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,73,20,33,10
+    CONTROL         "组织",IDC_CHECK3,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,138,20,33,10
+    CONTROL         "敌对",IDC_CHECK6,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,9,47,33,10
+    CONTROL         "友好",IDC_CHECK7,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,72,47,33,10
+    CONTROL         "中立",IDC_CHECK8,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,137,45,33,10
+    CONTROL         "意见领袖",IDC_CHECK11,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,10,105,50,10
+    CONTROL         "僵尸账号",IDC_CHECK12,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,72,105,46,10
+    CONTROL         "水军账号",IDC_CHECK13,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,136,105,50,10
+    LTEXT           "采样周期：",IDC_STATIC,171,134,44,8
+    CONTROL         "",IDC_RICHEDIT21,"RichEdit20W",WS_BORDER | WS_TABSTOP | 0x80,214,131,21,14,WS_EX_RIGHT
+    PUSHBUTTON      "Reset",IDC_CONVENTION_RESET,7,128,140,14
+    PUSHBUTTON      "Run All",IDC_BUTTON4,7,146,140,14
+    PUSHBUTTON      "Stop",IDC_BUTTON5,7,184,140,14
+    PUSHBUTTON      "Pause",IDC_BUTTON6,7,163,140,14
+    CONTROL         "自动保存",IDC_CHECK17,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,272,131,50,10
+    CONTROL         "报警提示",IDC_CHECK18,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,272,147,50,10
+    CONTROL         "自动集成",IDC_CHECK19,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,349,131,50,10
+    CONTROL         "自动可视化",IDC_CHECK20,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,349,147,59,10
+    LTEXT           "运行时间：",IDC_STATIC,171,148,44,8
+    PUSHBUTTON      "数据集成",IDC_BUTTON7,166,165,159,14
+    PUSHBUTTON      "可视化结果生成",IDC_VISUALIZATION,167,184,256,14
+    PUSHBUTTON      "查看结果",IDC_ENTITY_VIEW_BUTTON,318,17,44,14
+    PUSHBUTTON      "查看结果",IDC_FINGER_VIEWBUTTON,317,44,45,14
+    CONTROL         "",IDC_RICHEDIT22,"RichEdit20W",WS_BORDER | WS_TABSTOP | 0x80,214,146,21,14,WS_EX_RIGHT
+    PUSHBUTTON      "查看结果",IDC_RELATION_VIEWBUTTON,317,72,45,14
+    PUSHBUTTON      "查看结果",IDC_TEMPER_VIEWBUTTON,317,100,44,14
+    CONTROL         "6类关系",IDC_RADIO3,"Button",BS_AUTORADIOBUTTON,9,76,46,10
+    CONTROL         "18类子关系",IDC_RADIO4,"Button",BS_AUTORADIOBUTTON,71,75,58,10
+    PUSHBUTTON      "查看结果",IDC_INTEGRATION_VIEWBUTTON,332,165,91,14
+    LTEXT           "小时",IDC_STATIC,239,134,18,8
+    LTEXT           "小时",IDC_STATIC,238,149,18,8
+    PUSHBUTTON      "Run",IDC_ENTITY_VIEW_BUTTON2,253,17,45,14
+    PUSHBUTTON      "可视化",IDC_ENTITY_VIEW_BUTTON3,380,16,43,14
+    PUSHBUTTON      "Run",IDC_ENTITY_VIEW_BUTTON4,254,43,45,14
+    PUSHBUTTON      "Run",IDC_ENTITY_VIEW_BUTTON5,253,72,45,14
+    PUSHBUTTON      "Run",IDC_ENTITY_VIEW_BUTTON6,253,100,45,14
+    PUSHBUTTON      "可视化",IDC_ENTITY_VIEW_BUTTON7,380,44,43,14
+    PUSHBUTTON      "可视化",IDC_ENTITY_VIEW_BUTTON8,380,73,43,14
+    PUSHBUTTON      "可视化",IDC_ENTITY_VIEW_BUTTON9,380,100,43,14
+END
+
+IDD_FINGERPRINT DIALOGEX 0, 0, 391, 213
+STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_SYSMENU
+FONT 10, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    LTEXT           "无",IDC_STATIC,205,103,9,8
+    PUSHBUTTON      "Button1",IDC_BUTTON1,334,192,50,14
+END
+
+IDD_TEMPER DIALOGEX 0, 0, 431, 252
+STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_SYSMENU
+FONT 10, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    LTEXT           "无",IDC_STATIC,223,108,9,8
+    PUSHBUTTON      "Button1",IDC_BUTTON1,374,231,50,14
+END
+
+IDD_SELLER_DIALOG DIALOGEX 0, 0, 353, 317
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "STeller"
+FONT 9, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    CONTROL         "",IDC_STELLER_RICHEDIT2,"RichEdit20W",ES_MULTILINE | ES_AUTOVSCROLL | ES_NUMBER | WS_BORDER | WS_VSCROLL | WS_TABSTOP,7,7,339,288
+    PUSHBUTTON      "Save History",IDC_BUTTON_SAVE,64,296,50,14
+    PUSHBUTTON      "Clear",IDC_BUTTON_CLEAR,123,296,50,14
+    PUSHBUTTON      "Return",IDC_BUTTON_RETURN,296,296,50,14
+    PUSHBUTTON      "Save as",IDC_BUTTON_SAVE_AS,182,296,50,14
+    PUSHBUTTON      "Open History",IDC_BUTTON_OPEN_HISTORY,6,296,50,14
+    PUSHBUTTON      "Pause",IDC_STELLER_PAUSE,239,296,50,14
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO 
+BEGIN
+    IDD_CEDT, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 428
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 201
+    END
+
+    IDD_CRDC, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 425
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 201
+    END
+
+    IDD_CONVENTION, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 423
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 198
+    END
+
+    IDD_FINGERPRINT, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 384
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 206
+    END
+
+    IDD_TEMPER, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 424
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 245
+    END
+
+    IDD_SELLER_DIALOG, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 346
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 310
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
+#endif    // Chinese (P.R.C.) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+/////////////////////////////////////////////////////////////////////////////
+// English (U.S.) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+#ifdef _WIN32
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
+#pragma code_page(1252)
+#endif //_WIN32
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_ABOUTBOX DIALOGEX 0, 0, 170, 62
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "About Consensus"
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
+BEGIN
+    ICON            IDR_MAINFRAME,IDC_STATIC,14,14,21,20
+    LTEXT           "Consensus, Version 1.0",IDC_STATIC,42,14,114,8,SS_NOPREFIX
+    LTEXT           "Copyright (C) 2013",IDC_STATIC,42,26,114,8
+    DEFPUSHBUTTON   "OK",IDOK,113,41,50,14,WS_GROUP
+END
+
+IDD_CONSENSUS_DIALOG DIALOGEX 0, 0, 443, 252
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
+EXSTYLE WS_EX_APPWINDOW
+CAPTION "Consensus Graph"
+FONT 10, "MS Shell Dlg", 400, 0, 0x86
+BEGIN
+    CONTROL         "",IDC_TAB1,"SysTabControl32",0x0,7,11,429,217
+    CONTROL         "",IDC_RICHEDIT21,"RichEdit20W",ES_AUTOHSCROLL | WS_BORDER | WS_TABSTOP,60,230,119,14
+    CONTROL         "",IDC_RICHEDIT22,"RichEdit20W",ES_AUTOHSCROLL | WS_BORDER | WS_TABSTOP,276,230,130,14
+    LTEXT           "Corpus Folder:",IDC_STATIC,8,232,50,8
+    LTEXT           "Data Folder:",IDC_STATIC,231,233,42,8
+    PUSHBUTTON      "Set",IDC_BUTTON1,411,230,15,14
+    PUSHBUTTON      "Set",IDC_BUTTON2,182,230,17,14
+    CONTROL         "",IDC_RICHEDIT23,"RichEdit20W",ES_AUTOHSCROLL | WS_BORDER | WS_TABSTOP,258,8,159,14
+    LTEXT           "Notification:",IDC_STATIC,214,10,40,8
+    PUSHBUTTON      "Pad",IDC_PAD_BUTTON,418,8,17,14
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO 
+BEGIN
+    IDD_ABOUTBOX, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 163
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 55
+    END
+
+    IDD_CONSENSUS_DIALOG, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 436
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 244
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Version
+//
+
+VS_VERSION_INFO VERSIONINFO
+ FILEVERSION 1,0,0,1
+ PRODUCTVERSION 1,0,0,1
+ FILEFLAGSMASK 0x3fL
+#ifdef _DEBUG
+ FILEFLAGS 0x1L
+#else
+ FILEFLAGS 0x0L
+#endif
+ FILEOS 0x4L
+ FILETYPE 0x1L
+ FILESUBTYPE 0x0L
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "040904e4"
+        BEGIN
+            VALUE "CompanyName", "TODO: <Company name>"
+            VALUE "FileDescription", "TODO: <File description>"
+            VALUE "FileVersion", "1.0.0.1"
+            VALUE "InternalName", "Consensus.exe"
+            VALUE "LegalCopyright", "TODO: (c) <Company name>.  All rights reserved."
+            VALUE "OriginalFilename", "Consensus.exe"
+            VALUE "ProductName", "TODO: <Product name>"
+            VALUE "ProductVersion", "1.0.0.1"
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x409, 1252
+    END
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// String Table
+//
+
+STRINGTABLE 
+BEGIN
+    IDS_ABOUTBOX            "&About Consensus..."
+END
+
+#endif    // English (U.S.) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+
+#ifndef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 3 resource.
+//
+#define _AFX_NO_SPLITTER_RESOURCES
+#define _AFX_NO_OLE_RESOURCES
+#define _AFX_NO_TRACKER_RESOURCES
+#define _AFX_NO_PROPERTY_RESOURCES
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+LANGUAGE 9, 1
+#pragma code_page(1252)
+#include "res\Consensus.rc2"  // non-Microsoft Visual C++ edited resources
+#include "afxres.rc"     // Standard components
+#endif
+
+/////////////////////////////////////////////////////////////////////////////
+#endif    // not APSTUDIO_INVOKED
+
