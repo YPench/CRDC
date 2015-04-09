@@ -4,6 +4,13 @@
 #include "CSegmter.h"
 
 
+
+void RCCOM::Generating_Relation_Cases(const char* charInstance, const char* Arg_1, const char* Arg_2, vector<Relation_Case>& Relation_Case_v)
+{
+
+
+
+}
 void RCCOM::Get_Relation_Case_Info(const char* infopath, list<Relation_Case>& Relation_Case_l)
 {
 	map<string, size_t> Docinfo_m;
@@ -285,23 +292,6 @@ void RCCOM::Delet_0AH_and_20H_in_Relation_Case(Relation_Case& pmRelCase)
 	ace_op::Delet_0AH_and_20H_in_string(pmRelCase.sencond_entity.head.charseq);
 }
 
-void RCCOM::Output_Extract_ACE_Relation_Words_Context_For_Maxent(const char* FilePath, FeatureVctor& RelationWrods_v)
-{
-	ofstream out(FilePath);
-	if(out.bad())
-		return;
-	out.clear();
-	out.seekp(0, ios::beg);
-
-	FeatureVctor::iterator mmite = RelationWrods_v.begin();
-	for(; mmite != RelationWrods_v.end(); mmite++){
-		for(vector<pair<string, float>>::iterator  vite = (*mmite)->second.begin(); vite != (*mmite)->second.end(); vite++){
-			out << vite->first << ';' << vite->second << ';';
-		}
-		out << endl << (*mmite)->first << endl;
-	}
-	out.close();
-}
 
 void RCCOM::Wrods_Length_Detect(const char* lexiconpath, map<size_t, size_t>& LengthCnt_map)
 {
@@ -358,26 +348,26 @@ string RCCOM::Get_Entity_Positional_Structures(Relation_Case& pm_RCase)
 	//}
 	//Nested, Adjacent and Separated
 	if((pm_RCase.first_entity.extent.START >= pm_RCase.sencond_entity.extent.START) && (pm_RCase.first_entity.extent.END <= pm_RCase.sencond_entity.extent.END)){
-		return "1_Nested_in_2";
+		return "1_Nest_2";//Nested
 	}
 	if((pm_RCase.sencond_entity.extent.START >= pm_RCase.first_entity.extent.START) && (pm_RCase.sencond_entity.extent.END <= pm_RCase.first_entity.extent.END)){
-		return "2_Nested_in_1";
+		return "2_Nest_1";
 	}
 	if((pm_RCase.sencond_entity.extent.START <= pm_RCase.first_entity.extent.END) && (pm_RCase.sencond_entity.extent.END > pm_RCase.first_entity.extent.END)){
-		AppCall::Secretary_Message_Box("数据出错：1_Adjacent_2 is hit", MB_OK);
-		return "1_Adjacent_2";
+		//AppCall::Secretary_Message_Box("数据出错：1_Adjacent_2 is hit", MB_OK);
+		//return "1_Adj_2";
 	}
 	if((pm_RCase.first_entity.extent.START <= pm_RCase.sencond_entity.extent.END) && (pm_RCase.first_entity.extent.END > pm_RCase.sencond_entity.extent.END)){
-		AppCall::Secretary_Message_Box("数据出错：2_Adjacent_1 is hit", MB_OK);
-		return "2_Adjacent_1";
+		//AppCall::Secretary_Message_Box("数据出错：2_Adjacent_1 is hit", MB_OK);
+		//return "2_Adj_1";
 	}
 	if(pm_RCase.sencond_entity.extent.START > pm_RCase.first_entity.extent.END){
-		return "1_Separated_2";
+		return "1_Sep_2";//Separated
 	}
 	if(pm_RCase.first_entity.extent.START > pm_RCase.sencond_entity.extent.END){
-		return "2_Separated_1";
+		return "2_Sep_1";
 	}
-	AppCall::Secretary_Message_Box("数据出错：ace_op::Get_Entity_Positional_Structures()", MB_OK);
+	//AppCall::Secretary_Message_Box("数据出错：ace_op::Get_Entity_Positional_Structures()", MB_OK);
 	return "";
 }
 
@@ -400,69 +390,88 @@ string RCCOM::Get_Four_Types_of_Entity_Positional_Structures(Relation_Case& pm_R
 	return "";
 }
 
-void RCCOM::Output_For_LIBSVM(const char* inputpath, const char* outputfolder)
+void RCCOM::Output_For_LIBSVM(const char* inputpath, bool TYPE_Flag, const char* outputfolder)
 {
+	NLPOP::Delete_Dir_and_Grate(inputpath);
+	//vector<pair<string, vector<pair<string, float>>>*> 
+	set<string> RelationTYPE_s;
 	ostringstream ostream;
-	uFeatureVctor Training_v;
-	uFeatureVctor::iterator  iter_v;
-	//MAXEN::Read_CSmaxent_Training_Data(inputpath, Training_v);
+	FeatureVctor Training_v;
+	FeatureVctor::iterator  iter_v;
+	Training_v.reserve(300000);
+	MAXEN::Read_CSmaxent_Training_Data(inputpath, TYPE_Flag, Training_v);
 
 	map<string, long> Feature_Position_map;
 	long FeatureID = 1;
 	for(iter_v = Training_v.begin(); iter_v != Training_v.end(); iter_v++){
-		for(vector<pair<string, float>>::iterator vite = iter_v->second.begin(); vite != iter_v->second.end();vite++){
+		RelationTYPE_s.insert((*iter_v)->first);
+		for(vector<pair<string, float>>::iterator vite = (*iter_v)->second.begin(); vite != (*iter_v)->second.end(); vite++){
 			if(Feature_Position_map.find(vite->first) == Feature_Position_map.end()){
 				Feature_Position_map.insert(make_pair(vite->first, FeatureID++));
 			}
 		}
 	}
-	map<string, vector<map<size_t, size_t>>> Output_map;
-	for(iter_v = Training_v.begin(); iter_v != Training_v.end(); iter_v++){
-		if(Output_map.find(iter_v->first) == Output_map.end()){
-			Output_map[iter_v->first];
-		}
-		map<size_t, size_t> loc_Case_map;
-		for(vector<pair<string, float>>::iterator vite = iter_v->second.begin(); vite != iter_v->second.end();vite++){
-			loc_Case_map.insert(make_pair(Feature_Position_map[vite->first], 1));
-		}
-		Output_map[iter_v->first].push_back(loc_Case_map);
-	}
-	Training_v.clear();
-	double SVM_class;
-	for(map<string, vector<map<size_t, size_t>>>::iterator mvite = Output_map.begin(); mvite != Output_map.end();mvite++){
-		vector<pair<double, map<size_t, size_t>*>> prob_v;
-		for(map<string, vector<map<size_t, size_t>>>::iterator omvite = Output_map.begin(); omvite != Output_map.end();omvite++){
-			for(vector<map<size_t, size_t>>::iterator vite = omvite->second.begin(); vite != omvite->second.end(); vite++){
-				if(omvite == mvite){
-					SVM_class = 1;
-				}
-				else{
-					SVM_class = -1;
-				}
-				prob_v.push_back(make_pair(SVM_class, &(*vite)));
-			}
-		}
-		random_shuffle(prob_v.begin(), prob_v.end());
+
+	for(set<string>::iterator site = RelationTYPE_s.begin(); site != RelationTYPE_s.end(); site++){
 		ostream.str("");
-		ostream << outputfolder << mvite->first;
+		ostream << outputfolder << site->data();
 		ofstream out(ostream.str().c_str());
 		if(out.bad()){
 			return;
 		}
 		out.clear();
 		out.seekp(0, ios::beg);
-		for(vector<pair<double, map<size_t, size_t>*>>::iterator vite = prob_v.begin(); vite != prob_v.end(); vite++){
-			out << vite->first << ' ';
-			for(map<size_t, size_t>::iterator mite = vite->second->begin(); mite != vite->second->end(); mite++){
-				out << mite->first << ':' << mite->second << ' ';
+		for(iter_v = Training_v.begin(); iter_v != Training_v.end(); iter_v++){
+			if(!strcmp((*iter_v)->first.c_str(), site->data())){
+				out << 1 << ' ';
+			}
+			else{
+				out << -1 << ' ';
+			}
+			set<size_t> locFeatureID_s;
+			for(vector<pair<string, float>>::iterator vite = (*iter_v)->second.begin(); vite != (*iter_v)->second.end(); vite++){
+				locFeatureID_s.insert(Feature_Position_map[vite->first]);
+			}
+			for(set<size_t>::iterator site = locFeatureID_s.begin(); site != locFeatureID_s.end(); site++){
+				out << *site << ':' << 1 << ' ';
 			}
 			out << endl;
 		}
 		out.close();
 	}
+
+	for(vector<pair<string, vector<pair<string, float>>>*>::iterator vite = Training_v.begin(); vite != Training_v.end(); vite++){
+		delete *vite;
+	}
 	return;
 }
 
+void RCCOM::Adding_Entity_Extent_and_Head_to_Lexicon(vector<Relation_Case>& Relation_Case_v, set<string>& pmLexicon, char TYPE)
+{
+	for(vector<Relation_Case>::iterator vite = Relation_Case_v.begin(); vite != Relation_Case_v.end(); vite++){
+		Relation_Case& loc_Case = *vite;
+		ACE_entity_mention& Ref_E1 = loc_Case.first_entity;
+		ACE_entity_mention& Ref_E2 = loc_Case.sencond_entity;
+		string E1_Extend = Ref_E1.extent.charseq;
+		string E1_Head = Ref_E1.head.charseq;
+		string E2_Extned = Ref_E2.extent.charseq;
+		string E2_head = Ref_E2.head.charseq;
+		
+		ace_op::Delet_0AH_and_20H_in_string(E1_Extend);
+		ace_op::Delet_0AH_and_20H_in_string(E1_Head);
+		ace_op::Delet_0AH_and_20H_in_string(E2_Extned);
+		ace_op::Delet_0AH_and_20H_in_string(E2_head);
+
+		if(TYPE == 'E' || TYPE == 'A'){
+			pmLexicon.insert(E1_Extend);
+			pmLexicon.insert(E2_Extned);
+		}
+		if(TYPE == 'H' || TYPE == 'A'){
+			pmLexicon.insert(E1_Head);
+			pmLexicon.insert(E2_head);
+		}
+	}
+}
 
 void RCCOM::Adjacent_Words_POS_Feature_Extracting(CSegmter& m_CSegmter, const char* sentchar, map<string, float>& WordsCnt_map, string prix = "", string prox = "")
 {

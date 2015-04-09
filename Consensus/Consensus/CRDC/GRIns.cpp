@@ -19,19 +19,20 @@ void CGRIns::Generate_Positive_And_Negetive_ACE_Relation_Cases(string savepath, 
 	SENID = 0;
 	string RelationCaseFilePath = savepath;
 	map<string, ACE_entity>& ACE_Entity_Info_map = m_ACE_Corpus.ACE_Entity_Info_map;
-	deque<ACE_relation>& ACE_Relation_Info_d = m_ACE_Corpus.ACE_Relation_Info_d;
+	vector<ACE_relation>& ACE_Relation_Info_v = m_ACE_Corpus.ACE_Relation_Info_v;
 	map<string, ACE_sgm>& ACE_sgm_mmap = m_ACE_Corpus.ACE_sgm_mmap;
 
 	list<Relation_Case> totall_Case_l;
+	
+	if(true){// Generating Negative Instances
 
-	Extract_Sentence_with_Two_Named_Entities(m_ACE_Corpus, totall_Case_l);
+		Extract_Sentence_with_Two_Named_Entities(m_ACE_Corpus, totall_Case_l);
 
-	Delete_Sentence_Contianing_Positive_Relation_Case(totall_Case_l, ACE_Relation_Info_d);
-
+		Delete_Sentence_Contianing_Positive_Relation_Case(totall_Case_l, ACE_Relation_Info_v);
+	}
+	//Inplementing influence of negetive instance: 3 shoud annotate the follow
 	Adding_Positive_Training_Case_in_Relation_Mention(m_ACE_Corpus, totall_Case_l);
-
-	//For negetive case typ: 3
-	//Adding_Positive_Training_Case_in_Relation_Mention(m_ACE_Corpus, totall_Case_l);
+	
 
 	if(pCRDC->Generate_ICTCLAS_LEXICAL_FLAG){
 		RCCOM::Generate_ICTCLAS_Lexicon(m_CSegmter, totall_Case_l);
@@ -57,19 +58,19 @@ void CGRIns::Generate_Positive_And_Negetive_ACE_Relation_Cases(string savepath, 
 
 void CGRIns::Adding_Positive_Training_Case_in_Relation_Mention(ACE_Corpus& m_ACE_Corpus, list<Relation_Case>& Relation_Case_l)
 {
-	deque<ACE_relation>& ACE_Relation_Info_d = m_ACE_Corpus.ACE_Relation_Info_d;
+	vector<ACE_relation>& ACE_Relation_Info_v = m_ACE_Corpus.ACE_Relation_Info_v;
 	map<string, ACE_entity>& ACE_Entity_Info_map = m_ACE_Corpus.ACE_Entity_Info_map;
 
 	map<string, ACE_entity_mention> EntityMention_map;
 	RCCOM::Get_Entity_Mention_extent_Map(ACE_Entity_Info_map, EntityMention_map);
 	
-	for(size_t i = 0; i < ACE_Relation_Info_d.size(); i++){
-		for(vector<ACE_relation_mention>::iterator rmvite = ACE_Relation_Info_d[i].relation_mention_v.begin();  rmvite != ACE_Relation_Info_d[i].relation_mention_v.end(); rmvite++){
+	for(size_t i = 0; i < ACE_Relation_Info_v.size(); i++){
+		for(vector<ACE_relation_mention>::iterator rmvite = ACE_Relation_Info_v[i].relation_mention_v.begin();  rmvite != ACE_Relation_Info_v[i].relation_mention_v.end(); rmvite++){
 			Relation_Case loc_case;
 			loc_case.SENID = SENID++;
 			loc_case.DOCID = rmvite->DOCID;
-			loc_case.TYPE = ACE_Relation_Info_d[i].TYPE;
-			loc_case.SUBTYPE = ACE_Relation_Info_d[i].SUBTYPE;
+			loc_case.TYPE = ACE_Relation_Info_v[i].TYPE;
+			loc_case.SUBTYPE = ACE_Relation_Info_v[i].SUBTYPE;
 			loc_case.relatin_mention = *rmvite;
 			for(multimap<string, ACE_relation_mention_arg>::iterator emvite = rmvite->arg_mention_mmap.begin(); emvite != rmvite->arg_mention_mmap.end(); emvite++){
 				if(!strcmp("Arg-1", emvite->first.c_str())){
@@ -91,12 +92,12 @@ void CGRIns::Adding_Positive_Training_Case_in_Relation_Mention(ACE_Corpus& m_ACE
 
 
 //-----------------------------------Extract Sentence with Two Named Entities
-void CGRIns::Delete_Sentence_Contianing_Positive_Relation_Case(list<Relation_Case>& Relation_Case_l, deque<ACE_relation>& ACE_Relation_Info_d)
+void CGRIns::Delete_Sentence_Contianing_Positive_Relation_Case(list<Relation_Case>& Relation_Case_l, vector<ACE_relation>& ACE_Relation_Info_v)
 {
 	bool Erase_Flag;
 	for(list<Relation_Case>::iterator lite = Relation_Case_l.begin(); lite != Relation_Case_l.end(); ){
 		Erase_Flag = false;
-		for(deque<ACE_relation>::iterator dite = ACE_Relation_Info_d.begin(); dite != ACE_Relation_Info_d.end(); dite++){
+		for(vector<ACE_relation>::iterator dite = ACE_Relation_Info_v.begin(); dite != ACE_Relation_Info_v.end(); dite++){
 			for(vector<ACE_relation_mention>::iterator vite =  dite->relation_mention_v.begin(); vite !=  dite->relation_mention_v.end(); vite++){
 				if(vite->ID.find(lite->DOCID) == -1){
 					continue;
@@ -112,14 +113,18 @@ void CGRIns::Delete_Sentence_Contianing_Positive_Relation_Case(list<Relation_Cas
 				}
 				if((Arg_1.START == lite->first_entity.extent.START) && (Arg_1.END == lite->first_entity.extent.END) && 
 					(Arg_2.START == lite->sencond_entity.extent.START) && (Arg_2.END == lite->sencond_entity.extent.END)){
-					lite = Relation_Case_l.erase(lite);
 					//------------------------------------------------------------------------------------
 					//The following code, used for negetive case influence analyse
-					//For negetive case typ: 3
-					/*lite->TYPE = dite->TYPE;
-					lite->SUBTYPE = dite->SUBTYPE;
-					lite++;*/
-					//------------------------------------------------------------------------------------
+					//For influence of negetive instance typ: 3
+					//
+					if(false){
+						lite->TYPE = dite->TYPE;
+						lite->SUBTYPE = dite->SUBTYPE;
+						lite++;
+					}
+					else{
+						lite = Relation_Case_l.erase(lite);
+					}
 					Erase_Flag = true;
 					break;
 				}
@@ -137,10 +142,10 @@ void CGRIns::Delete_Sentence_Contianing_Positive_Relation_Case(list<Relation_Cas
 void CGRIns::Filter_sgm_sentence_with_Relation_Mention(ACE_Corpus& ACE_Corpus, map<string, list<pair<string, pair<size_t,size_t>>>>& pm_ACE_DocSentence_map)
 {
 	map<string, list<pair<string, pair<size_t,size_t>>>> RelationMention_map;
-	deque<ACE_relation>& ACE_Relation_Info_d = ACE_Corpus.ACE_Relation_Info_d;
+	vector<ACE_relation>& ACE_Relation_Info_v = ACE_Corpus.ACE_Relation_Info_v;
 
-	for(size_t i = 0; i < ACE_Relation_Info_d.size(); i++){
-		for(vector<ACE_relation_mention>::iterator rmvite = ACE_Relation_Info_d[i].relation_mention_v.begin();  rmvite != ACE_Relation_Info_d[i].relation_mention_v.end(); rmvite++){
+	for(size_t i = 0; i < ACE_Relation_Info_v.size(); i++){
+		for(vector<ACE_relation_mention>::iterator rmvite = ACE_Relation_Info_v[i].relation_mention_v.begin();  rmvite != ACE_Relation_Info_v[i].relation_mention_v.end(); rmvite++){
 			
 			if(RelationMention_map.find(rmvite->DOCID) == RelationMention_map.end()){
 				RelationMention_map[rmvite->DOCID];
@@ -148,7 +153,7 @@ void CGRIns::Filter_sgm_sentence_with_Relation_Mention(ACE_Corpus& ACE_Corpus, m
 			RelationMention_map[rmvite->DOCID].push_back(make_pair(rmvite->extent.charseq, make_pair(rmvite->extent.START, rmvite->extent.END)));
 		}
 	}
-	/*bool Erase_Flag;
+	bool Erase_Flag;
 	for(map<string, list<pair<string, pair<size_t,size_t>>>>::iterator mlite = pm_ACE_DocSentence_map.begin(); mlite != pm_ACE_DocSentence_map.end(); mlite++){
 		if(RelationMention_map.find(mlite->first) == RelationMention_map.end()){
 			ostringstream ostream;
@@ -171,7 +176,7 @@ void CGRIns::Filter_sgm_sentence_with_Relation_Mention(ACE_Corpus& ACE_Corpus, m
 				lite++;
 			}
 		}
-	}*/
+	}
 	pm_ACE_DocSentence_map.clear();
 	for(map<string, list<pair<string, pair<size_t,size_t>>>>::iterator mlite = RelationMention_map.begin(); mlite != RelationMention_map.end(); mlite++){
 		if(pm_ACE_DocSentence_map.find(mlite->first) == pm_ACE_DocSentence_map.end()){
@@ -192,10 +197,16 @@ void CGRIns::Extract_Sentence_with_Two_Named_Entities(ACE_Corpus& ACE_Corpus, li
 	map<string, list<pair<string, pair<size_t,size_t>>>> ACE_DocSentence_map;//<DOCID, list_pair: <Sentence, (START, ENd);>
 	map<string, vector<pair<ACE_extent, ACE_entity_mention*>>> EntityMentionInfo_map;//Save each entity mention info in doc.
 	//------------------------------------------------------------------------
-	ace_op::Segment_ACE_sgm_to_Sentence(ACE_sgm_mmap, ACE_DocSentence_map);
+	//To test relation instance among annotated relatio mentions, this function sholud be annotated;
+	if(pCRDC->For_English_Relation_Flag){
+		ace_op::Segment_ACE_English_sgm_to_Sentence(ACE_sgm_mmap, ACE_DocSentence_map);
+	}
+	else{
+		ace_op::Segment_ACE_sgm_to_Sentence(ACE_sgm_mmap, ACE_DocSentence_map);
+	}
 
 	//------------------------------------------------------------------------
-	//Only for negetive case influence analyse
+	//Only for negetive case influence analyse: Filtering clauses containing annotated relation mentions
 	//Filter_sgm_sentence_with_Relation_Mention(ACE_Corpus, ACE_DocSentence_map);
 
 	//------------------------------------------------------------------------

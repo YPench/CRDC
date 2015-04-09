@@ -1,15 +1,7 @@
 #include "stdafx.h"
 #include "..\\Include\\ace.h"
 
-string Detect_Single_NE_TYPE;//extern string Detect_Single_NE_TYPE;
-
-bool Greedy_Matching_Method_FLag;//extern bool Greedy_Matching_Method_FLag;
-
-bool Collect_nGross_Boundary_Info;//extern bool Collect_nGross_Boundary_Info;
-bool Collect_nGross_Candidate_Info;//extern bool Collect_nGross_Candidate_Info;
-
-Maxen_Rtn_map G_P_nCrossRtn_m;//extern Maxen_Rtn_map G_P_nCrossRtn_m;
-Maxen_Rtn_map G_R_nCrossRtn_m;//extern Maxen_Rtn_map G_P_nCrossRtn_m;
+extern string Detect_Single_NE_TYPE;
 
 void ace_op::Get_Entity_Mention_extent_Map(vector<ACE_entity_mention>& EntityMention_v, set<size_t>& START_s, set<size_t>& END_s)
 {
@@ -263,6 +255,7 @@ void ace_op::Segment_ACE_English_sgm_to_Sentence(map<string, ACE_sgm>& pm_sgmmap
 	PBreakpoint_s.insert("!");
 	PBreakpoint_s.insert("?");
 	PBreakpoint_s.insert(".");
+	PBreakpoint_s.insert(",");
 
 	list<pair<string, pair<size_t,size_t>>>::iterator lite, formerlite;
 	char sChar[3];
@@ -274,15 +267,29 @@ void ace_op::Segment_ACE_English_sgm_to_Sentence(map<string, ACE_sgm>& pm_sgmmap
 		if(pm_ACE_DocSentence_map.find(mite->second.DOCID) == pm_ACE_DocSentence_map.end()){
 			pm_ACE_DocSentence_map[mite->second.DOCID];
 		}
-		pm_ACE_DocSentence_map[mite->second.DOCID].push_back(make_pair(mite->second.DOC, make_pair(0, NLPOP::Get_Chinese_Sentence_Length_Counter(mite->second.DOC.c_str()))));
+		int TEXTposit = mite->second.DOC.find(mite->second.TEXT.c_str());
+		if(TEXTposit == string::npos){
+			AppCall::Secretary_Message_Box("TEXT substring position is wrong...", MB_OK);
+		}
+		size_t CharCnt = 0;
+		for(int i = 0; i < TEXTposit; ){
+			if(mite->second.DOC.c_str()[i++] < 0){
+				i++;
+			}
+			CharCnt++;
+		}
+		
+		pm_ACE_DocSentence_map[mite->second.DOCID].push_back(make_pair(mite->second.TEXT, make_pair(CharCnt, CharCnt+NLPOP::Get_Chinese_Sentence_Length_Counter(mite->second.TEXT.c_str()))));
+		//:text
+		//string teststr = Sentop::Get_Substr_by_Chinese_Character_Cnt(mite->second.DOC.c_str(), CharCnt, NLPOP::Get_Chinese_Sentence_Length_Counter(mite->second.TEXT.c_str()));
+		//mite->second.DOC = mite->second.TEXT;
 		list<pair<string, pair<size_t,size_t>>>& listref = pm_ACE_DocSentence_map[mite->second.DOCID];
 		lite = listref.begin();
-		if((lite->second.first != 0) || (listref.size() != 1)){
-			AppCall::Secretary_Message_Box("Êý¾Ý³ö´í£ºACE_EDT::Segment_ACE_sgm_to_Sentence()", MB_OK);
-		}
+		
+		int Relative_Posit = lite->second.first;
 		charseq_length = lite->second.second;
-		PositCnt = 0;
-		lite->second.second = 0;
+		PositCnt = lite->second.first;
+		lite->second.second = lite->second.first;
 		for(size_t Cnt = 0; PositCnt < charseq_length; ){
 			sChar[0] = lite->first.c_str()[Cnt++];
 			sChar[1] = 0;	
@@ -294,12 +301,12 @@ void ace_op::Segment_ACE_English_sgm_to_Sentence(map<string, ACE_sgm>& pm_sgmmap
 				string str;
 				formerlite = lite;
 				if(listref.size() == 1){
-					str = Sentop::Get_Substr_by_Chinese_Character_Cnt(lite->first.c_str(), 0, PositCnt);
-					listref.insert(lite, make_pair(str, make_pair(0, PositCnt - 1)));
+					str = Sentop::Get_Substr_by_Chinese_Character_Cnt(lite->first.c_str(), 0, PositCnt-Relative_Posit);
+					listref.insert(lite, make_pair(str, make_pair(Relative_Posit, PositCnt - 1)));
 				}
 				else{
 					formerlite--;
-					str = Sentop::Get_Substr_by_Chinese_Character_Cnt(lite->first.c_str(), formerlite->second.second + 1, PositCnt - formerlite->second.second - 1);
+					str = Sentop::Get_Substr_by_Chinese_Character_Cnt(lite->first.c_str(), formerlite->second.second + 1 - Relative_Posit, PositCnt - formerlite->second.second - 1);
 					listref.insert(lite, make_pair(str, make_pair(formerlite->second.second + 1, PositCnt - 1)));
 				}
 			}
@@ -310,24 +317,37 @@ void ace_op::Segment_ACE_English_sgm_to_Sentence(map<string, ACE_sgm>& pm_sgmmap
 		else{
 			formerlite = lite;
 			formerlite--;
-			lite->first = (Sentop::Get_Substr_by_Chinese_Character_Cnt(lite->first.c_str(), formerlite->second.second + 1, PositCnt - formerlite->second.second - 1));
+			lite->first = (Sentop::Get_Substr_by_Chinese_Character_Cnt(lite->first.c_str(), formerlite->second.second + 1 - Relative_Posit, PositCnt - formerlite->second.second - 1));
 			lite->second.first = formerlite->second.second + 1;
 			lite->second.second = PositCnt - 1;
 		}
 	}
+	for(map<string, list<pair<string, pair<size_t,size_t>>>>::iterator mlite = pm_ACE_DocSentence_map.begin(); mlite != pm_ACE_DocSentence_map.end(); mlite++){
+		for(list<pair<string, pair<size_t,size_t>>>::iterator lite = mlite->second.begin(); lite != mlite->second.end(); lite++){
+			if(lite->first.length() < 2){
+				continue;
+			}
+			sChar[0] = lite->first.c_str()[lite->first.length()-2];
+			sChar[1] = lite->first.c_str()[lite->first.length()-1];
+			if(PBreakpoint_s.find(sChar) != PBreakpoint_s.end()){
+				lite->first = Sentop::Get_Substr_by_Chinese_Character_Cnt(lite->first.c_str(), 0, lite->second.second-lite->second.first);
+				lite->second.second = lite->second.second-1;
+			}
+		}
+	}
 }
 
-void ace_op::Extract_ACE_Relation_Mention_Info(string savefile, deque<ACE_relation>& ACE_Relation_Info_d)
+void ace_op::Extract_ACE_Relation_Mention_Info(string savefile, vector<ACE_relation>& ACE_Relation_Info_v)
 {
 	string RealtionType;
 	string relation_charseqstr;
 	map<string, set<string>> relation_mention_map;
 	deque<string> Relation_mention_sentence_d;
 
-	for(size_t i = 0; i < ACE_Relation_Info_d.size(); i++){
-		RealtionType = ACE_Relation_Info_d[i].TYPE;
+	for(size_t i = 0; i < ACE_Relation_Info_v.size(); i++){
+		RealtionType = ACE_Relation_Info_v[i].TYPE;
 
-		for(vector<ACE_relation_mention>::iterator vite = ACE_Relation_Info_d[i].relation_mention_v.begin(); vite != ACE_Relation_Info_d[i].relation_mention_v.end(); vite++){
+		for(vector<ACE_relation_mention>::iterator vite = ACE_Relation_Info_v[i].relation_mention_v.begin(); vite != ACE_Relation_Info_v[i].relation_mention_v.end(); vite++){
 			relation_charseqstr = vite->extent.charseq;
 			if(relation_mention_map.find(RealtionType) == relation_mention_map.end()){
 				relation_mention_map[RealtionType];
@@ -343,6 +363,35 @@ void ace_op::Extract_ACE_Relation_Mention_Info(string savefile, deque<ACE_relati
 	//Write_Vector_Deque_List_To_File<deque<string>>(savefile, Relation_mention_sentence_d, '\n');
 
 	return;
+}
+string ace_op::Delet_0AH_and_20H_in_string(RelationContext& pmContext)
+{
+
+	return "";
+}
+
+void ace_op::Delet_0AH_and_20H_in_string(const char* inputchar, char* outputchar, size_t BUF_SIZE)
+{
+	char sChar[3];
+	sChar[2]=0;
+	size_t charsize = strlen(inputchar);
+	strcpy_s(outputchar, BUF_SIZE, "");
+	for(size_t Cnt = 0; Cnt < charsize; ){
+		sChar[0] = inputchar[Cnt++];
+		sChar[1] = 0;	
+		if(sChar[0] < 0 ){
+			sChar[1]=inputchar[Cnt++];
+		}
+		if(!strcmp(sChar, "\n")){
+			continue;
+		}
+		else if(!strcmp(sChar, " ")){
+			continue;
+		}
+		else{
+			strcat_s(outputchar, BUF_SIZE, sChar);
+		}
+	}
 }
 
 string ace_op::Delet_0AH_and_20H_in_string(const char* strchar)
@@ -396,12 +445,46 @@ void ace_op::Delet_0AH_and_20H_in_string(string &pmstr)
 		}
 	}
 	pmstr = sentencechar;
+}
+
+void ace_op::Delet_0AH_in_string(string &pmstr)
+{
+	char sentencechar[MAX_SENTENCE];
+	char sChar[3];
+	sChar[2]=0;
+
+	strcpy_s(sentencechar, MAX_SENTENCE, "");
+	for(size_t Cnt = 0; Cnt < pmstr.length(); ){
+		sChar[0] = pmstr.c_str()[Cnt++];
+		sChar[1] = 0;	
+		if(sChar[0] < 0 ){
+			sChar[1]=pmstr.c_str()[Cnt++];
+		}
+		if(!strcmp(sChar, "\n")){
+			continue;
+		}
+		else{
+			strcat_s(sentencechar, MAX_SENTENCE, sChar);
+		}
+	}
+	pmstr = sentencechar;
 
 }
 
 
-
-
+void ace_op::Get_Entity_Mention_extent_Map(vector<ACE_entity_mention*>& EntityMentionp_v, map<size_t, map<size_t, ACE_entity_mention*>>& EntityMention_mm)
+{
+	for(vector<ACE_entity_mention*>::iterator pvite = EntityMentionp_v.begin(); pvite != EntityMentionp_v.end(); pvite++){	
+		ACE_entity_mention& loc_mention = **pvite;
+		if(EntityMention_mm.find(loc_mention.extent.START) == EntityMention_mm.end()){
+			EntityMention_mm[loc_mention.extent.START];
+		}
+		if(EntityMention_mm[loc_mention.extent.START].find(loc_mention.extent.END) == EntityMention_mm[loc_mention.extent.START].end()){
+			EntityMention_mm[loc_mention.extent.START][loc_mention.extent.END];
+			EntityMention_mm[loc_mention.extent.START][loc_mention.extent.END] = *pvite;
+		}
+	}
+}
 
 
 
@@ -444,9 +527,12 @@ void ace_op::Output_Relation_Case(const char* FilePath, list<Relation_Case>& Rel
 	out.seekp(0, ios::beg);
 
 	for(list<Relation_Case>::iterator list = Relation_Case_l.begin(); list != Relation_Case_l.end(); list++){
-		out << list->SENID << '\t' << list->DOCID << '\t' << list->TYPE << '\t' << list->SUBTYPE << '\t' << '\r';
-		
 		ACE_relation_mention& relation_mention = list->relatin_mention;
+		if(relation_mention.extent.charseq.find('\t') != -1){
+			continue;
+			AppCall::Secretary_Message_Box("Tab character is found in: ace_op::Output_Relation_Case()");
+		}
+		out << list->SENID << '\t' << list->DOCID << '\t' << list->TYPE << '\t' << list->SUBTYPE << '\t' << '\r';
 		out << relation_mention.DOCID << '\t' << relation_mention.ID << '\t' << relation_mention.LEXICALCONDITION << '\t';
 		out << relation_mention.extent.charseq << '\t' << relation_mention.extent.START << '\t' << relation_mention.extent.END << '\t' << '\r';
 		
@@ -461,7 +547,6 @@ void ace_op::Output_Relation_Case(const char* FilePath, list<Relation_Case>& Rel
 		out << second_entity.extent.charseq << '\t' << second_entity.extent.START << '\t' << second_entity.extent.END << '\t' << '\r';
 
 	}
-
 	out.close();
 
 }
@@ -542,7 +627,7 @@ void ace_op::Relation_Case_Structural_Position(vector<Relation_Case>& Relation_C
 	AppCall::Secretary_Message_Box(ostream.str(), MB_OK);
 }
 
-void ace_op::Load_Relation_Case(const char* FilePath, vector<Relation_Case>& Relation_Case_v)
+void ace_op::Load_Relation_Case(const char* FilePath, vector<Relation_Case*>& Relation_Case_v)
 {
 
 	char SentenceBuf[MAX_SENTENCE];
@@ -558,7 +643,8 @@ void ace_op::Load_Relation_Case(const char* FilePath, vector<Relation_Case>& Rel
 		if(in.peek() == EOF){	
 			break;
 		}
-		Relation_Case loc_RCase;
+		Relation_Case* pLocCase = new Relation_Case;
+		Relation_Case& loc_RCase = *pLocCase;
 		in.getline(SentenceBuf, MAX_SENTENCE, '\r');
 		istringstream sstream(SentenceBuf);
 		
@@ -652,7 +738,7 @@ void ace_op::Load_Relation_Case(const char* FilePath, vector<Relation_Case>& Rel
 		sstream >> second_entity.extent.END;
 		sstream.getline(SentenceBuf, MAX_SENTENCE, '\t');
 
-		Relation_Case_v.push_back(loc_RCase);
+		Relation_Case_v.push_back(pLocCase);
 	}
 	in.close();
 }

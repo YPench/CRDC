@@ -24,6 +24,145 @@ SXMLer::~SXMLer()
 	
 }
 
+bool SXMLer::Xercesc_ACE_Action_Mention_Extractor(const char* xmlFile, ACE_Corpus& m_ACE_Corpus)
+{
+	string path = xmlFile;
+	vector<string> FilePath_v;
+	if(!NLPOP::Exist_of_This_File(path + "apf.v5.1.1.dtd")){
+		AppCall::Secretary_Message_Box("The pointed .dtd file is not exist...", MB_OK);
+		return "";
+	}
+	NLPOP::Get_Specified_Files(xmlFile, FilePath_v, ".xml");
+
+	if(!Xercesc_Initialize_Flag){
+			Xercesc_Initialize();
+	}
+	map<string, ACE_Event>& ACE_EventInfo_m = m_ACE_Corpus.ACE_EventInfo_m;
+	for(size_t i = 0; i < FilePath_v.size(); i++){
+		string apfname = FilePath_v[i].substr(FilePath_v[i].rfind('.'), FilePath_v[i].length());
+		if(strcmp(apfname.c_str(), ".xml")){
+			continue;
+		}
+		apfname = FilePath_v[i].substr(0, FilePath_v[i].rfind('.'));
+		apfname  = apfname.substr(apfname.rfind('.'), apfname.length());
+		if(strcmp(apfname.c_str(), ".apf")){
+			continue;
+		}
+		apfname = FilePath_v[i];
+
+		XercesDOMParser* parser = new XercesDOMParser();
+		parser->setValidationScheme(XercesDOMParser::Val_Always);
+		parser->setDoNamespaces(true);    // optional
+
+		ErrorHandler* errHandler = (ErrorHandler*) new HandlerBase();
+		parser->setErrorHandler(errHandler);
+		try {
+			parser->parse(apfname.c_str());
+		 }
+		catch (...) {
+			cout << "Unexpected Exception \n" ;
+			return false;
+		}
+		xercesc_3_1::DOMDocument* xmlDoc = parser->getDocument();
+		DOMElement * Xroot = xmlDoc->getDocumentElement();
+		DOMElement * pDocElement;
+		DOMElement * pACE_Events;
+
+		if(Xroot){
+			if(!XMLString::compareIString(Xroot->getTagName(), XMLString::transcode("source_file"))){
+				string URI = XMLString::transcode(Xroot->getAttribute(XMLString::transcode("URI")));
+				string SOURCE = XMLString::transcode(Xroot->getAttribute(XMLString::transcode("SOURCE")));
+				string TYPE = XMLString::transcode(Xroot->getAttribute(XMLString::transcode("TYPE")));
+				string AUTHOR = XMLString::transcode(Xroot->getAttribute(XMLString::transcode("AUTHOR")));
+				string ENCODING = XMLString::transcode(Xroot->getAttribute(XMLString::transcode("ENCODING")));
+				pDocElement = Xroot->getFirstElementChild();
+				if(!XMLString::compareIString(pDocElement->getTagName(), XMLString::transcode("document"))){
+					string DOCID = XMLString::transcode(pDocElement->getAttribute(XMLString::transcode("DOCID")));
+
+					pACE_Events = pDocElement->getFirstElementChild();
+					while(pACE_Events){
+						if(!XMLString::compareIString(pACE_Events->getTagName(), XMLString::transcode("event"))){
+							break;
+						}
+						pACE_Events = pACE_Events->getNextElementSibling();
+					}
+					if(pACE_Events){
+						while(!XMLString::compareIString(pACE_Events->getTagName(), XMLString::transcode("event"))){
+							XMLSize_t eventcnt = pACE_Events->getChildElementCount();;
+							ACE_Event loc_event;
+							loc_event.DOCID = DOCID;
+							loc_event.ID = XMLString::transcode(pACE_Events->getAttribute(XMLString::transcode("ID")));
+							loc_event.TYPE = XMLString::transcode(pACE_Events->getAttribute(XMLString::transcode("TYPE")));
+							loc_event.SUBTYPE = XMLString::transcode(pACE_Events->getAttribute(XMLString::transcode("SUBTYPE")));
+							loc_event.MODALITY = XMLString::transcode(pACE_Events->getAttribute(XMLString::transcode("MODALITY")));
+							loc_event.POLARITY = XMLString::transcode(pACE_Events->getAttribute(XMLString::transcode("POLARITY")));
+							loc_event.GENERICITY = XMLString::transcode(pACE_Events->getAttribute(XMLString::transcode("GENERICITY")));
+							loc_event.TENSE = XMLString::transcode(pACE_Events->getAttribute(XMLString::transcode("TENSE")));
+							DOMElement * pEvent = pACE_Events->getFirstElementChild();
+							for(XMLSize_t i = 0; i < eventcnt; i++){
+								if(!XMLString::compareIString(pEvent->getTagName(), XMLString::transcode("event_argument"))){
+									loc_event.event_argument_v.push_back(make_pair(XMLString::transcode(pEvent->getAttribute(XMLString::transcode("REFID")))
+										, XMLString::transcode(pEvent->getAttribute(XMLString::transcode("ROLE")))));
+								}
+								else if(!XMLString::compareIString(pEvent->getTagName(), XMLString::transcode("event_mention"))){
+									event_mention loc_mention;
+									loc_mention.ID = XMLString::transcode(pEvent->getAttribute(XMLString::transcode("ID")));
+									XMLSize_t mentioncnt = pEvent->getChildElementCount();
+									DOMElement * pnode = pEvent->getFirstElementChild();
+									for(XMLSize_t j = 0; j < mentioncnt; j++){
+										if(!XMLString::compareIString(pnode->getTagName(), XMLString::transcode("extent"))){
+											DOMElement * pextend = pnode->getFirstElementChild();
+											loc_mention.extent.START = atoi(XMLString::transcode(pextend->getAttribute(XMLString::transcode("START"))));
+											loc_mention.extent.END = atoi(XMLString::transcode(pextend->getAttribute(XMLString::transcode("END"))));
+											loc_mention.extent.charseq = XMLString::transcode(pextend->getTextContent());
+										}
+										else if(!XMLString::compareIString(pnode->getTagName(), XMLString::transcode("ldc_scope"))){
+											DOMElement * pextend = pnode->getFirstElementChild();
+											loc_mention.ldc_scope.START = atoi(XMLString::transcode(pextend->getAttribute(XMLString::transcode("START"))));
+											loc_mention.ldc_scope.END = atoi(XMLString::transcode(pextend->getAttribute(XMLString::transcode("END"))));
+											loc_mention.ldc_scope.charseq = XMLString::transcode(pextend->getTextContent());
+										}
+										else if(!XMLString::compareIString(pnode->getTagName(), XMLString::transcode("anchor"))){
+											DOMElement * pextend = pnode->getFirstElementChild();
+											loc_mention.anchor.START = atoi(XMLString::transcode(pextend->getAttribute(XMLString::transcode("START"))));
+											loc_mention.anchor.END = atoi(XMLString::transcode(pextend->getAttribute(XMLString::transcode("END"))));
+											loc_mention.anchor.charseq = XMLString::transcode(pextend->getTextContent());
+										}
+										else if(!XMLString::compareIString(pnode->getTagName(), XMLString::transcode("event_mention_argument"))){
+											event_mention_argument loc_argment;
+											loc_argment.REFID = XMLString::transcode(pnode->getAttribute(XMLString::transcode("REFID")));
+											loc_argment.ROLE = XMLString::transcode(pnode->getAttribute(XMLString::transcode("ROLE")));
+
+											DOMElement * pextend = pnode->getFirstElementChild();
+											pextend = pextend->getFirstElementChild();
+											loc_argment.extent.START = atoi(XMLString::transcode(pextend->getAttribute(XMLString::transcode("START"))));
+											loc_argment.extent.END = atoi(XMLString::transcode(pextend->getAttribute(XMLString::transcode("END"))));
+											loc_argment.extent.charseq = XMLString::transcode(pextend->getTextContent());
+											
+											loc_mention.event_mention_argument_v.push_back(loc_argment);
+										}
+										pnode = pnode->getNextElementSibling();
+									}
+									loc_event.event_mention_v.push_back(loc_mention);
+								}
+								pEvent = pEvent->getNextElementSibling();
+							}
+							ACE_EventInfo_m.insert(make_pair(loc_event.ID, loc_event));
+							pACE_Events = pACE_Events->getNextElementSibling();
+							if(!pACE_Events){
+								break;
+							}
+						}
+					}
+				}
+			}
+		}
+		delete parser;
+		delete errHandler;
+	}
+	return true;
+}
+
 string SXMLer::Xercesc_ACE_Folder_For_sgm_Files_Filter(string path, ACE_Corpus& m_ACE_Corpus)
 {
 	string filename;
@@ -60,6 +199,8 @@ string SXMLer::Xercesc_ACE_Folder_Files_Filter(string path, ACE_Corpus& m_ACE_Co
 	}
 	return "";
 }
+
+
 bool SXMLer::Xercesc_ACE_sgm_Content_Extractor(const char* xmlFile, ACE_Corpus& m_ACE_Corpus)
 {
 	map<string, ACE_sgm>& ACE_sgm_mmap = m_ACE_Corpus.ACE_sgm_mmap;
@@ -150,9 +291,94 @@ bool SXMLer::Xercesc_ACE_sgm_Content_Extractor(const char* xmlFile, ACE_Corpus& 
 	return false;
 }
 
+
+
+bool SXMLer::Xercesc_Gigaword_Content_Extractor(const char* xmlFile, vector<pCGigaDOC>& m_GigaDOC_v, const char* TYPE)
+{
+
+	vector<string> FilePath_v;
+	string path = xmlFile;
+	//if(!NLPOP::Exist_of_This_File(path + "gigaword_c.dtd")){
+	//	AppCall::Secretary_Message_Box("The pointed .dtd file is not exist...", MB_OK);
+	//	return "";
+	//}
+	NLPOP::Get_Specified_Files(path, FilePath_v, TYPE);
+	if(!Xercesc_Initialize_Flag){
+			Xercesc_Initialize();
+	}
+
+	m_GigaDOC_v.reserve(200000);
+	DOMElement * Xroot;
+	DOMElement* pDocElement;
+	DOMElement* pElement;
+	for(size_t i = 0; i < FilePath_v.size(); i++){
+		//path = FilePath_v[i].substr(FilePath_v[i].rfind('\\')+1, FilePath_v[i].length()).c_str();
+		//if(!strcmp(path.c_str(), "gigaword_c.dtd")){
+		//	continue;
+		//}
+		XercesDOMParser* parser = new XercesDOMParser();
+		ErrorHandler* errHandler = (ErrorHandler*) new HandlerBase();
+		parser->setValidationScheme(XercesDOMParser::Val_Always);
+		parser->setDoNamespaces(true);    // optional
+		parser->setErrorHandler(errHandler);
+		try {
+			parser->parse(FilePath_v[i].c_str());
+		 }
+		catch (...) {
+			cout << "Unexpected Exception \n" ;
+			AppCall::Secretary_Message_Box("Unexpected Exception...", MB_OK);
+			delete parser;
+			delete errHandler;
+			continue;
+		}
+		xercesc_3_1::DOMDocument* xmlDoc = parser->getDocument();;
+		
+		Xroot = xmlDoc->getDocumentElement();
+		XMLSize_t doccnt = Xroot->getChildElementCount();
+		pDocElement = Xroot->getFirstElementChild();
+		pDocElement = Xroot;
+		for(XMLSize_t j = 0; j < doccnt; j++){
+			pCGigaDOC plocGigaDOC = new CGigaDOC;
+			plocGigaDOC->p_DOCID = NULL;
+			plocGigaDOC->p_TYPE = NULL;
+			plocGigaDOC->p_Headline = NULL;
+			plocGigaDOC->p_Dataline = NULL;
+			plocGigaDOC->p_TEXT = NULL;
+			if(XMLString::compareIString(pDocElement->getTagName(), XMLString::transcode("DOC"))){
+				AppCall::Secretary_Message_Box("Unmatched Data in: SXMLer::Xercesc_Gigaword_Content_Extractor()");
+			}
+			plocGigaDOC->p_DOCID = XMLString::transcode(pDocElement->getAttribute(XMLString::transcode("id")));
+			plocGigaDOC->p_TYPE = XMLString::transcode(pDocElement->getAttribute(XMLString::transcode("type")));
+			
+			XMLSize_t elementcnt = pDocElement->getChildElementCount();
+			pElement = pDocElement->getFirstElementChild();
+			for(XMLSize_t k = 0; k < elementcnt; k++){
+				if(!XMLString::compareIString(pElement->getTagName(), XMLString::transcode("HEADLINE"))){
+					plocGigaDOC->p_Headline = XMLString::transcode(pElement->getTextContent());
+				}
+				else if(!XMLString::compareIString(pElement->getTagName(), XMLString::transcode("DATELINE"))){
+					plocGigaDOC->p_Dataline = XMLString::transcode(pElement->getTextContent());
+				}
+				else if(!XMLString::compareIString(pElement->getTagName(), XMLString::transcode("TEXT"))){
+					plocGigaDOC->p_TEXT = XMLString::transcode(pElement->getTextContent());
+				}
+				pElement = pElement->getNextElementSibling();
+			}
+			m_GigaDOC_v.push_back(plocGigaDOC);
+			pDocElement = pDocElement->getNextElementSibling();
+		}
+		delete parser;
+		delete errHandler;
+	}
+	return 0;
+}
+
+
+
+
 bool SXMLer::Xercesc_ACE_Relation_Corpus_Extractor(const char* xmlFile, ACE_Corpus& m_ACE_Corpus)
 {
-	deque<ACE_relation>& ACE_Relation_Info_d = m_ACE_Corpus.ACE_Relation_Info_d;
+	vector<ACE_relation>& ACE_Relation_Info_v = m_ACE_Corpus.ACE_Relation_Info_v;
 	map<string, ACE_entity>& ACE_Entity_Info_map = m_ACE_Corpus.ACE_Entity_Info_map;
 
 	if(!Xercesc_Initialize_Flag){
@@ -221,11 +447,20 @@ bool SXMLer::Xercesc_ACE_Relation_Corpus_Extractor(const char* xmlFile, ACE_Corp
 			documentElement = Xroot->getFirstElementChild();
 			if(!XMLString::compareIString(documentElement->getTagName(), XMLString::transcode("document"))){
 				sDOCID = XMLString::transcode(documentElement->getAttribute(XMLString::transcode("DOCID")));
+				m_ACE_Corpus.ACE_DocInfo_m[sDOCID];
+				m_ACE_Corpus.ACE_DocInfo_m[sDOCID].DOCID = sDOCID;
+				m_ACE_Corpus.ACE_DocInfo_m[sDOCID].URI = XMLString::transcode(Xroot->getAttribute(XMLString::transcode("URI")));
+				m_ACE_Corpus.ACE_DocInfo_m[sDOCID].SOURCE = XMLString::transcode(Xroot->getAttribute(XMLString::transcode("SOURCE")));
+				m_ACE_Corpus.ACE_DocInfo_m[sDOCID].TYPE = XMLString::transcode(Xroot->getAttribute(XMLString::transcode("TYPE")));
+				m_ACE_Corpus.ACE_DocInfo_m[sDOCID].AUTHOR = XMLString::transcode(Xroot->getAttribute(XMLString::transcode("AUTHOR")));
+				m_ACE_Corpus.ACE_DocInfo_m[sDOCID].ENCODING = XMLString::transcode(Xroot->getAttribute(XMLString::transcode("ENCODING")));
+
 				ACE_Element = documentElement->getFirstElementChild();
 				while(ACE_Element){
 					if(!XMLString::compareIString(ACE_Element->getTagName(), XMLString::transcode("entity"))){
 						entity = ACE_Element;
 						ACE_entity m_ACE_entity;
+						m_ACE_entity.DOCID = sDOCID;
 						m_ACE_entity.ID = XMLString::transcode(entity->getAttribute(XMLString::transcode("ID")));
 						m_ACE_entity.TYPE = XMLString::transcode(entity->getAttribute(XMLString::transcode("TYPE")));
 						m_ACE_entity.SUBTYPE = XMLString::transcode(entity->getAttribute(XMLString::transcode("SUBTYPE")));
@@ -237,6 +472,7 @@ bool SXMLer::Xercesc_ACE_Relation_Corpus_Extractor(const char* xmlFile, ACE_Corp
 								ACE_entity_mention m_ACE_entity_mention;
 								//-----additional info
 								m_ACE_entity_mention.DOCID = sDOCID;
+								m_ACE_entity_mention.Entity_ID = m_ACE_entity.ID;
 								m_ACE_entity_mention.Entity_TYPE = m_ACE_entity.TYPE;
 								m_ACE_entity_mention.Entity_SUBSTYPE = m_ACE_entity.SUBTYPE;
 								m_ACE_entity_mention.Entity_CLASS = m_ACE_entity.CLASS;
@@ -244,6 +480,7 @@ bool SXMLer::Xercesc_ACE_Relation_Corpus_Extractor(const char* xmlFile, ACE_Corp
 								m_ACE_entity_mention.ID = XMLString::transcode(entity_mention->getAttribute(XMLString::transcode("ID")));
 								m_ACE_entity_mention.TYPE = XMLString::transcode(entity_mention->getAttribute(XMLString::transcode("TYPE")));
 								m_ACE_entity_mention.LDCTYPE = XMLString::transcode(entity_mention->getAttribute(XMLString::transcode("LDCTYPE")));
+								m_ACE_entity_mention.LDCATR = XMLString::transcode(entity_mention->getAttribute(XMLString::transcode("LDCATR")));
 								entity_mention_child_Element = entity_mention->getFirstElementChild();
 								while(entity_mention_child_Element){
 									if(!XMLString::compareIString(entity_mention_child_Element->getTagName(), XMLString::transcode("extent"))){
@@ -308,6 +545,7 @@ bool SXMLer::Xercesc_ACE_Relation_Corpus_Extractor(const char* xmlFile, ACE_Corp
 					else if(!XMLString::compareIString(ACE_Element->getTagName(), XMLString::transcode("relation"))){
 						relation = ACE_Element;
 						ACE_relation m_ACE_relation;//***********
+						m_ACE_relation.DOCID = sDOCID;
 						m_ACE_relation.ID = XMLString::transcode(relation->getAttribute(XMLString::transcode("ID")));
 						m_ACE_relation.TYPE	= XMLString::transcode(relation->getAttribute(XMLString::transcode("TYPE")));
 						m_ACE_relation.SUBTYPE = XMLString::transcode(relation->getAttribute(XMLString::transcode("SUBTYPE")));
@@ -368,7 +606,7 @@ bool SXMLer::Xercesc_ACE_Relation_Corpus_Extractor(const char* xmlFile, ACE_Corp
 								}//else if...relation_mention
 							relation_child_Element = relation_child_Element->getNextElementSibling();
 						}//while(relation_mention}
-						ACE_Relation_Info_d.push_back(m_ACE_relation);
+						ACE_Relation_Info_v.push_back(m_ACE_relation);
 					}//if(relation)
 					ACE_Element = ACE_Element->getNextElementSibling();
 				}//while(Relation)

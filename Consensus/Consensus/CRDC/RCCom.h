@@ -7,6 +7,8 @@
 
 namespace RCCOM{
 
+	void Generating_Relation_Cases(const char* charInstance, const char* Arg_1, const char* Arg_2, vector<Relation_Case>& Relation_Case_v);
+
 	void Get_Relation_Case_Info(const char* infopath, list<Relation_Case>& Relation_Case_l);
 	void Generate_ICTCLAS_Lexicon(CSegmter& m_CSegmter, list<Relation_Case>& Relation_Case_l);
 	void Wrods_Length_Detect(const char* lexiconpath, map<size_t, size_t>& LengthCnt_map);
@@ -21,9 +23,10 @@ namespace RCCOM{
 	void Local_Adjacent_Words_Singleton_POS_Feature_Extracting(CSegmter& m_CSegmter, const char* sentchar, map<string, float>& WordsCnt_map, string prix, string prox);
 	void Adjacent_Words_POS_Feature_Extracting(CSegmter& m_CSegmter, const char* sentchar, map<string, float>& WordsCnt_map, string prix, string prox);
 	void Get_Entity_Mention_extent_Map(map<string, ACE_entity>& ACE_Entity_Info_map, map<string, ACE_entity_mention>& EntityMention_map);
-	void Output_Extract_ACE_Relation_Words_Context_For_Maxent(const char* FilePath, FeatureVctor& RelationWrods_v);
-	void Output_For_LIBSVM(const char* inputpath, const char* outputfolder);
+	
+	void Output_For_LIBSVM(const char* inputpath, bool TYPE_Flag, const char* outputfolder);
 
+	void Adding_Entity_Extent_and_Head_to_Lexicon(vector<Relation_Case>& Relation_Case_v, set<string>& pmLexicon, char TYPE);
 	void Delet_0AH_and_20H_in_Relation_Case(Relation_Case& pmRelCase);
 	void Delet_0AH_and_20H_in_RelationContext(RelationContext& pm_context);
 	

@@ -19,5 +19,7 @@ public:
 
 	bool Xercesc_ACE_Relation_Corpus_Extractor(const char* xmlFile, ACE_Corpus& m_ACE_Corpus);
 	bool Xercesc_ACE_sgm_Content_Extractor(const char* xmlFile, ACE_Corpus& m_ACE_Corpus);
+	bool Xercesc_Gigaword_Content_Extractor(const char* xmlFile, vector<pCGigaDOC>& m_GigaDOC_v, const char* TYPE);
+	bool Xercesc_ACE_Action_Mention_Extractor(const char* xmlFile, ACE_Corpus& m_ACE_Corpus);
 	
 };

@@ -20,7 +20,7 @@ STeller_Dlg::STeller_Dlg(CWnd* pParent /*=NULL*/)
 	NLPOP::LoadWordsStringSet(PATH_STOPTIMETYPE_SET, STopTimeType_SET);
 	Diaplay_Thread_Running = false;
 	Pause_FLag = false;
-
+	strcpy_s(m_DisplayBuf, MAX_DISPLAY_BUF, "");
 }
 
 STeller_Dlg::~STeller_Dlg()
@@ -45,7 +45,7 @@ ON_BN_CLICKED(IDC_BUTTON_OPEN_HISTORY, &STeller_Dlg::OnBnClickedButtonOpenHistor
 ON_BN_CLICKED(IDC_STELLER_PAUSE, &STeller_Dlg::OnBnClickedStellerPause)
 END_MESSAGE_MAP()
 
-
+/*
 void STeller_Dlg::OnCancel()
 {
 	if(Diaplay_Thread_Running){
@@ -56,7 +56,7 @@ void STeller_Dlg::OnCancel()
 	}
 	ShowWindow(SW_HIDE);
 	return;
-}
+}*/
 
 BOOL  STeller_Dlg::PreTranslateMessage(MSG* pMsg)  
 {  
@@ -95,19 +95,19 @@ DWORD WINAPI Display_Message_Thread(LPVOID pParam)
 		pRich->SetWindowTextW(NLPOP::string2CString(sstream.str()));
 		Sleep(1000);
 	}
-	pstller->displaystr = "";
+	strcpy_s(pstller->m_DisplayBuf, MAX_DISPLAY_BUF, "");
 	for(vector<pair<string, int>>::iterator vite = pstller->Display_Content_v.begin(); vite != pstller->Display_Content_v.end(); vite++){	
 		if(!pstller->Diaplay_Thread_Running){
 			ExitThread(0);
 		}
-		pstller->displaystr += vite->first;
-		pRich->SetWindowTextW(NLPOP::string2CString(pstller->displaystr));
+		pstller->Reset_Display_Buf(vite->first.c_str());
+		pRich->SetWindowTextW(NLPOP::string2CString(pstller->m_DisplayBuf));
 		pRich->PostMessage(WM_VSCROLL, SB_BOTTOM,0);
 		Sleep(vite->second);
 	}
-	pstller->displaystr += "\n-------------------------\n";
-	pstller->displaystr += "空格键重复，回车退出！";
-	pRich->SetWindowTextW(NLPOP::string2CString(pstller->displaystr));
+	pstller->Reset_Display_Buf("\n-------------------------\n");
+	pstller->Reset_Display_Buf("空格键重复，回车退出！");
+	pRich->SetWindowTextW(NLPOP::string2CString(pstller->m_DisplayBuf));
 
 	pstller->Diaplay_Thread_Running = false;
 	ExitThread(0);
@@ -162,32 +162,100 @@ LRESULT STeller_Dlg::STeller_Initialization(WPARAM wParam, LPARAM lParam )
 }
 void STeller_Dlg::STeller_Output_Port(const char* outchar)
 {
-	//ShowWindow(SW_SHOW);
-	displaystr += outchar;
+	/*if(!G_pSTeller->IsWindowVisible()){
+		G_Buf_Count += strlen(poutstr);
+		if(G_Buf_Count > MAX_SENTENCE){
+			strcpy_s(G_STellerBuf, MAX_SENTENCE, "");
+			G_Buf_Count = strlen(poutstr);
+		}
+		strcat_s(G_STellerBuf, MAX_SENTENCE, poutstr);
+		return;
+	}
+	
+	if(0 != strlen(G_STellerBuf)){
+		G_pSTeller->STeller_Output_Port(G_STellerBuf);
+		strcpy_s(G_STellerBuf, MAX_SENTENCE, "");
+		G_Buf_Count = 0;
+	}*/
+	Reset_Display_Buf(outchar);
+	if(!IsWindowVisible()){
+		return;
+	}
 	if(!Pause_FLag){
-		m_richSeller.SetWindowTextW(NLPOP::string2CString(displaystr));
+		m_richSeller.SetWindowTextW(NLPOP::string2CString(m_DisplayBuf));
 		m_richSeller.PostMessage(WM_VSCROLL, SB_BOTTOM,0);
 	}
 }
 
-void STeller_Dlg::STeller_Output_Port_with_Save(const char* outchar)
+//MAX_DISPLAY_BUF;
+void STeller_Dlg::Reset_Display_Buf(const char* inputchar)
+{
+
+	int CurSize = strlen(m_DisplayBuf);
+	int InpSize = strlen(inputchar);
+	int i = CurSize+InpSize;
+	int j = 0;
+	if(!(i < MAX_DISPLAY_BUF)){
+		i = CurSize/6*5;
+		if(m_DisplayBuf[i] < 0){
+			i++;
+		}
+		while(i < MAX_DISPLAY_BUF){
+			if(!m_DisplayBuf[i]){
+				break;
+			}
+			m_DisplayBuf[j++] = m_DisplayBuf[i++];
+		}
+		m_DisplayBuf[j] = 0;
+	}
+	j = strlen(m_DisplayBuf);
+	i = 0;
+	while(j < MAX_DISPLAY_BUF && i < InpSize){
+		m_DisplayBuf[j++] = inputchar[i++];
+	}
+	m_DisplayBuf[j] = 0;
+	/*{
+		i = MAX_DISPLAY_BUF-1-InpSize;
+		int j = 0;
+		int k = CurSize - i;
+		for(; j < i; j++){
+			m_DisplayBuf[j] = m_DisplayBuf[j+k];
+		}
+		m_DisplayBuf[j] = 0;
+	}*/
+	/*
+	int i = CurSize+InpSize;
+
+	if(i > MAX_DISPLAY_BUF-1){
+		i = MAX_DISPLAY_BUF-1;
+	}
+	m_DisplayBuf[i] = 0;
+	
+	for( i--; i >= InpSize; i--){
+		m_DisplayBuf[i] = m_DisplayBuf[i-InpSize];
+	}
+	for(i = 0; i < InpSize; i++){
+		m_DisplayBuf[i] = inputchar[i];
+	}*/
+}
+
+void STeller_Dlg::STeller_Output_Port_with_Save(const char* inputchar)
 {
 	//m_STeller.ShowWindow(SW_SHOW);
-	displaystr += outchar;
-	displaystr += "\n";
-	ResultHistorystr += outchar;
+	
+	STeller_Output_Port(inputchar);
+	ResultHistorystr += inputchar;
 	ResultHistorystr += "\n";
-	if(!Pause_FLag){
-		m_richSeller.SetWindowTextW(NLPOP::string2CString(displaystr));
-		m_richSeller.PostMessage(WM_VSCROLL, SB_BOTTOM,0);
+	if(ResultHistorystr.length() > MAX_SENTENCE){
+		OnBnClickedButtonSave();
 	}
 }
 
 
 void STeller_Dlg::OnBnClickedButtonClear()
 {
-	displaystr = "";
-	m_richSeller.SetWindowTextW(NLPOP::string2CString(displaystr));
+	strcpy_s(m_DisplayBuf, MAX_DISPLAY_BUF, "");
+	m_richSeller.SetWindowTextW(_T(""));
 
 	// TODO: Add your control notification handler code here
 }
@@ -243,7 +311,7 @@ void STeller_Dlg::OnBnClickedButtonSaveAs()
 		return;
 	out.clear();
 	out.seekp(0, ios::beg);
-	out << displaystr;
+	out << m_DisplayBuf;
 	out.close();
 
 	STeller_Output_Port("Result is saved...");
@@ -287,7 +355,7 @@ void STeller_Dlg::OnBnClickedStellerPause()
 		//::SetDlgItemText(AfxGetApp()->m_pMainWnd->m_hWnd, IDC_STELLER_PAUSE, _T("Continue"));
 		CWnd* pWnd = GetDlgItem(IDC_STELLER_PAUSE);  
 		pWnd->SetWindowText(_T("Pause"));
-		m_richSeller.SetWindowTextW(NLPOP::string2CString(displaystr));
+		m_richSeller.SetWindowTextW(NLPOP::string2CString(m_DisplayBuf));
 		m_richSeller.PostMessage(WM_VSCROLL, SB_BOTTOM,0);
 	}
 		

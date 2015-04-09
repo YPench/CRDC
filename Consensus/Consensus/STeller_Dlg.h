@@ -3,7 +3,7 @@
 #include "..\\Include\\CGCom.h"
 #include "afxwin.h"
 
-
+#define MAX_DISPLAY_BUF 12768
 class STeller_Dlg : public CDialog
 {
 	DECLARE_DYNAMIC(STeller_Dlg)
@@ -17,7 +17,7 @@ public:
 
 protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
-	virtual void OnCancel();
+	//virtual void OnCancel();
 	virtual BOOL PreTranslateMessage(MSG* pMsg);
 
 	afx_msg void OnBnClickedButtonSave();
@@ -36,16 +36,19 @@ public:
 	set<string> STopTimeType_SET;
 	vector<pair<string, int>> Display_Content_v;
 
-	string displaystr;
 	string ResultHistorystr;
 	bool Diaplay_Thread_Running;
 
-	void STeller_Output_Port(const char* outchar);
-	void STeller_Output_Port_with_Save(const char* outchar);
+	void STeller_Output_Port(const char* inputchar);
+	void STeller_Output_Port_with_Save(const char* inputchar);
 	bool Pause_FLag;
+	char m_DisplayBuf[MAX_DISPLAY_BUF];
 
 	
 	afx_msg void OnBnClickedButtonOpenHistory();
 	afx_msg void OnBnClickedStellerPause();
 	CButton m_PauseButton;
+
+	void Reset_Display_Buf(const char* outchar);
+
 };

@@ -1,13 +1,13 @@
 #include "StdAfx.h"
 
 #include "CSegmter.h"
-#include "F:\\YPench\\ICTCLAS50_Windows_32_C\\API\\ICTCLAS50.h"
+#include "F:\\YPench\\Toolkit\\ICTCLAS50_Windows_32_C\\API\\ICTCLAS50.h"
 
 
 CSegmter::CSegmter()
 {
 	ICTCLAS50_INIT_FLAG = false;
-
+	Max_Lexicon_Size = 0;
 	//CLAUSEPOS pm_PaseCS;
 	//ICTCLAS_Segmention_Port("被王菲赶出家门的人", pm_PaseCS);
 }
@@ -17,6 +17,80 @@ CSegmter::~CSegmter()
 	if(ICTCLAS50_INIT_FLAG)
 		ICTCLAS_Exit();
 
+}
+
+void CSegmter::English_Radical_Extractor(const char* sentchar, set<string>& pmRadicalSet, size_t Max_Word_Legnth, map<string, float>& WordsCnt_map, string prix = "", string prox = "")
+{
+	if(strlen(sentchar) == 0){
+		stringstream ostream;
+		ostream << prix << "#" << prox;
+		if(WordsCnt_map.find(ostream.str()) == WordsCnt_map.end()){
+			WordsCnt_map.insert(make_pair(ostream.str(), (float)1));
+		}
+		return;
+	}
+	char sentencechar[MAX_CLAUSE_LENGTH];
+	char sChar[3];
+	sChar[2]=0;
+	size_t char_size = strlen(sentchar);
+	if(0 == char_size){
+		return;
+	}
+	size_t max_j;
+	for(unsigned int i = 0; i < char_size; ){
+		strcpy_s(sentencechar, MAX_CLAUSE_LENGTH, "");
+		max_j = i + Max_Word_Legnth;
+		if(max_j > char_size){
+			max_j = char_size;
+		}
+		for(unsigned int j = i; j < max_j; ){
+			sChar[0] = sentchar[j++];
+			sChar[1] = 0;
+			if(sChar[0] < 0 ){
+				sChar[1]=sentchar[j++];
+			}
+			strcat_s(sentencechar, MAX_CLAUSE_LENGTH, sChar);
+			if(pmRadicalSet.find(sentencechar) != pmRadicalSet.end()){
+				stringstream ostream;
+				ostream << prix << sentencechar << prox;
+				if(WordsCnt_map.find(ostream.str()) == WordsCnt_map.end()){
+					WordsCnt_map.insert(make_pair(ostream.str(), (float)1));
+				}
+				//else {
+				//	WordsCnt_map[ostream.str()]++;
+				//}
+			}
+		}
+		if(sentchar[i++] < 0){
+			i++;
+		}
+	}
+}
+
+void CSegmter::English_Words_Extractor(const char* sentchar, set<string>& pmWordSet, size_t Max_Word_Legnth, map<string, float>& WordsCnt_map, string prix = "", string prox = "")
+{
+	char getlineBuf[MAX_SENTENCE];
+	istringstream streamstr(sentchar);
+	vector<string> words_v;
+	while(EOF != streamstr.peek()){
+		streamstr.getline(getlineBuf, MAX_SENTENCE,' ');
+		if(strlen(getlineBuf) == 0){
+			continue;
+		}
+		words_v.push_back(getlineBuf);
+		stringstream ostream;
+		ostream << prix << getlineBuf << prox;
+		if(WordsCnt_map.find(ostream.str()) == WordsCnt_map.end()){
+			WordsCnt_map.insert(make_pair(ostream.str(), (float)1));
+		}
+	}
+	/*for(size_t i = 0; i < words_v.size(); i++){
+		if(i+1 < words_v.size()){
+			stringstream ostream;
+			ostream << "n_" << prix << "_" << words_v[i] << "_" << words_v[i+1] << "_" << prox;
+			WordsCnt_map.insert(make_pair(ostream.str(), (float)1));
+		}
+	}*/
 }
 
 void CSegmter::ICTCLAS_Segmentation_words_feature_Extracting(const char* sentchar, map<string, float>& WordsCnt_map, string prix = "", string prox = "")
@@ -44,7 +118,7 @@ void CSegmter::ICTCLAS_Segmention_Port(const char* sentstr, CLAUSEPOS& pm_PaseCS
 {
 	if(!ICTCLAS50_INIT_FLAG)
 	{
-		if(ICTCLAS_Init("F:\\YPench\\ICTCLAS50_Windows_32_C\\API\\")) 	
+		if(ICTCLAS_Init("F:\\YPench\\Toolkit\\ICTCLAS50_Windows_32_C\\API\\")) 	
 			ICTCLAS50_INIT_FLAG = true;
 		else
 		{
@@ -97,9 +171,53 @@ void CSegmter::ICTCLAS_Segmention_Port(const char* sentstr, CLAUSEPOS& pm_PaseCS
 }
 
 
-void CSegmter::Omni_words_feature_Extracting(const char* sentchar, set<string>& pmWordSet, map<string, float>& WordsCnt_map, string prix = "", string prox = "")
+void CSegmter::Omni_words_feature_Extracting(const char* sentchar, set<string>& pmWordSet, size_t Max_Word_Legnth, map<string, float>& WordsCnt_map, string prix = "", string prox = "")
 {
-	string feature;
+	if(strlen(sentchar) == 0){
+		stringstream ostream;
+		ostream << prix << "#" << prox;
+		if(WordsCnt_map.find(ostream.str()) == WordsCnt_map.end()){
+			WordsCnt_map.insert(make_pair(ostream.str(), (float)1));
+		}
+		return;
+	}
+	char sentencechar[MAX_CLAUSE_LENGTH];
+	char sChar[3];
+	sChar[2]=0;
+	size_t char_size = strlen(sentchar);
+	if(0 == char_size){
+		return;
+	}
+	size_t max_j;
+	for(unsigned int i = 0; i < char_size; ){
+		strcpy_s(sentencechar, MAX_CLAUSE_LENGTH, "");
+		max_j = i + Max_Word_Legnth;
+		if(max_j > char_size){
+			max_j = char_size;
+		}
+		for(unsigned int j = i; j < max_j; ){
+			sChar[0] = sentchar[j++];
+			sChar[1] = 0;
+			if(sChar[0] < 0 ){
+				sChar[1]=sentchar[j++];
+			}
+			strcat_s(sentencechar, MAX_CLAUSE_LENGTH, sChar);
+			if(pmWordSet.find(sentencechar) != pmWordSet.end()){
+				stringstream ostream;
+				ostream << prix << sentencechar << prox;
+				if(WordsCnt_map.find(ostream.str()) == WordsCnt_map.end()){
+					WordsCnt_map.insert(make_pair(ostream.str(), (float)1));
+				}
+				//else {
+				//	WordsCnt_map[ostream.str()]++;
+				//}
+			}
+		}
+		if(sentchar[i++] < 0){
+			i++;
+		}
+	}
+	/*string feature;
 	map<string, unsigned long> loc_featuremap;
 
 	Get_Sentence_Omni_Words_Cnt(sentchar, pmWordSet, loc_featuremap);
@@ -109,9 +227,9 @@ void CSegmter::Omni_words_feature_Extracting(const char* sentchar, set<string>& 
 		if(WordsCnt_map.find(feature) == WordsCnt_map.end()){
 			WordsCnt_map.insert(make_pair(feature, (float)1));//Warning
 		}
-	}
+	}*/
 }
-
+//older function
 void CSegmter::Get_Sentence_Omni_Words_Cnt(const char* charstr, set<string>& pmWordsset, map<string, unsigned long>& WordsCnt_map)
 {
 	char sentencechar[MAX_SENTENCE];
@@ -150,6 +268,77 @@ void CSegmter::Get_Sentence_Omni_Words_Cnt(const char* charstr, set<string>& pmW
 	}
 }
 
+void CSegmter::Omni_words_feature_Extracting(const char* sentchar, set<string>& pmWordSet, map<string, size_t>& WordsCnt_map)
+{
+	char sentencechar[MAX_SENTENCE];
+	char sChar[3];
+	sChar[2]=0;
+	size_t char_size = strlen(sentchar);
+
+	size_t max_j;
+	for(unsigned int i = 0; i < char_size; ){
+		strcpy_s(sentencechar, MAX_SENTENCE, "");
+		max_j = i + Max_Lexicon_Size;
+		if(max_j > char_size){
+			max_j = char_size;
+		}
+		for(unsigned int j = i; j < max_j; ){
+			sChar[0] = sentchar[j++];
+			sChar[1] = 0;
+			if(sChar[0] < 0 ){
+				sChar[1]=sentchar[j++];
+			}
+			strcat_s(sentencechar, MAX_SENTENCE, sChar);
+			if(pmWordSet.find(sentencechar) != pmWordSet.end()){
+				if(WordsCnt_map.find(sentencechar) == WordsCnt_map.end()){
+					WordsCnt_map.insert(make_pair(sentencechar, 1));
+				}
+				else {
+					WordsCnt_map[sentencechar]++;
+				}
+			}
+		}
+		if(sentchar[i++] < 0){
+			i++;
+		}
+	}
+}
+
+void CSegmter::Get_Sentence_Omni_Words_Cnt(const char* charstr, set<string>& pmWordsset, size_t Max_Word_Legnth, map<string, unsigned long>& WordsCnt_map)
+{
+	char sentencechar[MAX_SENTENCE];
+	char sChar[3];
+	sChar[2]=0;
+	size_t charstrlen = strlen(charstr);
+
+	for(unsigned int i = 0; i < charstrlen; ){
+		strcpy_s(sentencechar, MAX_SENTENCE, "");
+		size_t max_j = i + Max_Word_Legnth;
+		if(max_j > charstrlen){
+			max_j = charstrlen;
+		}
+		for(unsigned int j = i; j < max_j; ){
+			sChar[0] = charstr[j++];
+			sChar[1] = 0;	
+			if(sChar[0] < 0 ){
+				sChar[1]=charstr[j++];
+			}
+			strcat_s(sentencechar, MAX_SENTENCE, sChar);
+			if(pmWordsset.find(sentencechar) != pmWordsset.end()){
+				if(WordsCnt_map.find(sentencechar) == WordsCnt_map.end()){
+					WordsCnt_map.insert(make_pair(sentencechar, 1));
+				}
+				else {
+					WordsCnt_map[sentencechar]++;
+				}
+			}
+		}
+		if(charstr[i++] < 0){
+			i++;
+		}
+	}
+}
+
 
 
 void CSegmter::Initiate_Words_set(vector<DismCase>& pDismCase_v, set<string>& pmWordSet)
@@ -161,7 +350,7 @@ void CSegmter::Initiate_Words_set(vector<DismCase>& pDismCase_v, set<string>& pm
 
 	if(LCWCC_Flag){
 		lexiconpath = DATA_FOLDER;
-		lexiconpath += "CVMC.dat";
+		lexiconpath += "LCWCC.dat";
 		if(!NLPOP::Exist_of_This_File(lexiconpath)){
 			AppCall::Secretary_Message_Box("Lexicon of CVMC is not existing...", MB_OK);
 		}

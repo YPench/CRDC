@@ -61,11 +61,15 @@ BOOL CConsensusApp::InitInstance()
 	// such as the name of your company or organization
 	SetRegistryKey(_T("Local AppWizard-Generated Applications"));
 
-	m_STeller.Create(IDD_SELLER_DIALOG, NULL);
-	m_STeller.ShowWindow(SW_HIDE);
+	//m_pSTeller = new STeller_Dlg;
+	//m_pSTeller->Create(IDD_SELLER_DIALOG, NULL);
+	//m_pSTeller->ShowWindow(SW_HIDE);
 
 	CConsensus_Dlg dlg;
-	m_pMainWnd = &dlg;
+
+	//dlg.Create(IDD_CONSENSUS_DIALOG, NULL);
+	//dlg.ShowWindow(SW_SHOW);
+
 	INT_PTR nResponse = dlg.DoModal();
 	if (nResponse == IDOK)
 	{
@@ -81,12 +85,8 @@ BOOL CConsensusApp::InitInstance()
 	// Since the dialog has been closed, return FALSE so that we exit the
 	//  application, rather than start the application's message pump.
 
-	
-
-
 	return FALSE;
 }
-
 
 //#define WM_DISPLAY	WM_USER+100
 //#define WM_MESSAGE	WM_USER+101

@@ -9,11 +9,10 @@
 #define new DEBUG_NEW
 #endif
 
-
-
 DWORD WINAPI Consensus_Responce_Threaad(LPVOID pParam);
 // CAboutDlg dialog used for App About
 
+STeller_Dlg* G_pSTeller;
 
 class CAboutDlg : public CDialog
 {
@@ -44,22 +43,18 @@ void CAboutDlg::DoDataExchange(CDataExchange* pDX)
 BEGIN_MESSAGE_MAP(CAboutDlg, CDialog)
 END_MESSAGE_MAP()
 
-
 // CConsensus_Dlg dialog
-
-
-
-
 CConsensus_Dlg::CConsensus_Dlg(CWnd* pParent /*=NULL*/)
 	: CDialog(CConsensus_Dlg::IDD, pParent)
 {
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
-	XML_Parse_Flag = false;
+	XML_Parsing_Flag = false;
 	MaxentRan_Flag = false;
 	MSG_Thread_Flag = false;
 	UserInputRequireFlag = false;
-	Notification_Pad_Flag = false;
-	
+	ACE_Coupus_Loaded_Flag = false;
+	XML_Cigaword_Parsing_Flag = false;
+	System_Busy_Flag = false;
 }
 
 void CConsensus_Dlg::DoDataExchange(CDataExchange* pDX)
@@ -68,7 +63,7 @@ void CConsensus_Dlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_TAB1, m_sheet);
 	DDX_Control(pDX, IDC_RICHEDIT23, m_ResponceEdit);
 	DDX_Control(pDX, IDC_RICHEDIT21, m_CorpusEdit);
-	DDX_Control(pDX, IDC_RICHEDIT22, m_DataEdit);
+	DDX_Control(pDX, IDC_RICHEDIT22, m_GigawordEdit);
 }
 
 BEGIN_MESSAGE_MAP(CConsensus_Dlg, CDialog)
@@ -80,8 +75,8 @@ BEGIN_MESSAGE_MAP(CConsensus_Dlg, CDialog)
 	
 	ON_BN_CLICKED(IDC_BUTTON2, &CConsensus_Dlg::OnBnClickedCorpusPathButton)
 	ON_BN_CLICKED(IDC_BUTTON1, &CConsensus_Dlg::OnBnClickedDataPathButton)
-	
 	ON_BN_CLICKED(IDC_PAD_BUTTON, &CConsensus_Dlg::OnBnClickedPadButton)
+
 END_MESSAGE_MAP()
 
 
@@ -117,24 +112,90 @@ BOOL CConsensus_Dlg::OnInitDialog()
     m_S_Consumer = CreateSemaphore(NULL, 0, MAX_PRODUCT_SEMAPHORE, NULL);						//初始计数为0
     m_E_MessageListEvent = CreateEvent(NULL, FALSE, TRUE, NULL);
 
-	CorpusFolder = CORPUS_FOLDER;
+	ACECorpusFolder = CHINESE_CORPUS_FOLDER;
 	DataFolder = DATA_FOLDER;
 	MaxentRunPath = MAXENT_FOLDER;
+	GigawordFolder = Gigawrod_CORPUS_FOLDER;
 
+	m_pSTeller = new STeller_Dlg;
+	m_pSTeller->Create(IDD_SELLER_DIALOG, NULL);
+	m_pSTeller->ShowWindow(SW_HIDE);
+	G_pSTeller = m_pSTeller;
+
+#ifdef CONSENSUS_ENET
+	m_sheet.AddPage(_T("Analyzer"), &m_CENET_Dlg, IDD_ANALYZER);
+	m_CENET_Dlg.p_CParentDlg = this;
+	m_CENET_Dlg.GigawordFolder = EVENT_ORGANIZATION_FOLDER;
+	m_CENET_Dlg.ACECorpusFolder = CHINESE_CORPUS_FOLDER;
+	//m_CENET_Dlg.OnBnClickedAnalExample();
+#endif
+
+#ifdef CONSENSUS_CDOC
+	m_CDOC_Dlg.p_CParentDlg = this;
+	m_sheet.AddPage(_T("Document Event"), &m_CDOC_Dlg, IDD_CDOC);
+	ACECorpusFolder = Gigawrod_CORPUS_FOLDER;
+	m_CDOC_Dlg.ACECorpusFolder = EVENT_ORGANIZATION_FOLDER;
+
+#endif
+
+#ifdef CONSENSUS_CEDT
+	m_CCEDT_Dlg.p_CParentDlg = this;
+	m_sheet.AddPage(_T("Named Entity"), &m_CCEDT_Dlg, IDD_CEDT);
+	ACECorpusFolder = CHINESE_CORPUS_FOLDER;
+#endif
+
+#ifdef CONSENSUS_CRDC
 	m_CCRDC_Dlg.p_CParentDlg = this;
-	// TODO: Add extra initialization here
-	
-	m_sheet.AddPage(_T("关系识别"), &m_CCRDC_Dlg, IDD_CRDC);
+	m_sheet.AddPage(_T("Relation"), &m_CCRDC_Dlg, IDD_CRDC);
+	ACECorpusFolder = CHINESE_CORPUS_FOLDER;
+	if(m_CCRDC_Dlg.For_English_Relation_Flag){
+		ACECorpusFolder = ENGLISH_CORPUS_FOLDER;
+	}
+		
+#endif
+
+#ifdef CONSENSUS_ECOR
+	m_ECOR_Dlg.p_CParentDlg = this;
+	m_sheet.AddPage(_T("指代消解"), &m_ECOR_Dlg, IDD_ECOR);
+	ACECorpusFolder = ENGLISH_CORPUS_FOLDER;
+#endif
 
 	m_sheet.Show();
+	Enable_Usable_Button();
 
-	m_CCRDC_Dlg.Enable_Usable_Button_CRDC();
-	m_CorpusEdit.SetWindowTextW(_T(CORPUS_FOLDER));
-	m_DataEdit.SetWindowTextW(_T(DATA_FOLDER));
+#ifdef CONSENSUS_ENET
+	m_CENET_Dlg.Dispaly_Event_Network_Pictures();
+#endif
+
+	m_CorpusEdit.SetWindowTextW(NLPOP::string2CString(ACECorpusFolder));
+	m_GigawordEdit.SetWindowTextW(_T(Gigawrod_CORPUS_FOLDER));
 
 	msgThread = CreateThread(NULL, 0, Consensus_Responce_Threaad, (LPVOID)this, 0, &msgphreadId);
 
 	return TRUE;  // return TRUE  unless you set the focus to a control
+}
+
+void CConsensus_Dlg::OnCancel()
+{
+	if(System_Busy_Flag){
+		int rtn = AfxMessageBox(_T("有任务正在运行，确定要退出吗？"), MB_YESNOCANCEL);
+		if(rtn != IDYES){
+			return;
+		}
+	}
+	#ifdef CONSENSUS_ENET
+	if(m_CENET_Dlg.Opened_CDENer_Dlg_Flag){
+		m_CENET_Dlg.p_m_CDENer_Dlg->Init_Reviewer();
+		delete m_CENET_Dlg.p_m_CDENer_Dlg;
+	}
+	#endif
+	CConsensusApp *app = (CConsensusApp *)AfxGetApp();
+	delete m_pSTeller;
+
+	for(size_t i = 0; i < m_GigaDOC_v.size(); i++){
+		delete m_GigaDOC_v[i];
+	}
+	CDialog::OnCancel();
 }
 
 void CConsensus_Dlg::OnSysCommand(UINT nID, LPARAM lParam)
@@ -151,10 +212,25 @@ void CConsensus_Dlg::OnSysCommand(UINT nID, LPARAM lParam)
 }
 void CConsensus_Dlg::Notification_Input(const char* inputchar)
 {
+	//CConsensusApp *app = (CConsensusApp *)AfxGetApp();
+#ifdef CONSENSUS_ENET
+	if(m_CENET_Dlg.Command_From_Notification(inputchar)){
+		return;
+	}
+#endif
+
 	if(!strcmp("", inputchar) || !strcmp("show", inputchar)){
-		CConsensusApp *app = (CConsensusApp *)AfxGetApp();
-		app->m_STeller.ShowWindow(SW_SHOW);
-		Notification_Pad_Flag = true;
+		m_pSTeller->ShowWindow(SW_SHOW);
+	}
+	if(!strcmp("social", inputchar)){
+		string FileName = ENET_FOLDER;
+		FileName += "Social_Analysis.paj";
+		AppCall::Consensus_Open_Process(FileName.c_str(), Pajet_Path);
+	}
+	if(!strcmp("000", inputchar)){
+		string FileName = ENET_FOLDER;
+		FileName += "PLT_Analysis_relation.paj";
+		AppCall::Consensus_Open_Process(FileName.c_str(), Pajet_Path);
 	}
 }
 
@@ -198,6 +274,7 @@ BOOL CConsensus_Dlg::PreTranslateMessage(MSG* pMsg)
 	{
 		UserInputRequireFlag = false;
 	}
+
 	return CDialog::PreTranslateMessage(pMsg);
 }
 // If you add a minimize button to your dialog, you will need the code below
@@ -246,12 +323,37 @@ DWORD WINAPI Consensus_Responce_Threaad(LPVOID pParam)
 	BOOL bRet;
 	dlgRef.MSG_Thread_Flag = true;
 	while(true){
-		if(dlgRef.XML_Parse_Flag){
+		if(dlgRef.XML_Parsing_Flag){
 			strcpy_s(OutputChar, MAX_SENTENCE, "\"XML Parse\" is running ...");
 		}
+#ifdef CONSENSUS_CEDT
+		else if(dlgRef.m_CCEDT_Dlg.CEDT_Busy_Flag){
+			strcpy_s(OutputChar, MAX_SENTENCE, "CEDT is running...");
+		}
+#endif
+
+#ifdef CONSENSUS_CRDC
 		else if(dlgRef.m_CCRDC_Dlg.CRDC_Busy_Flag){
 			strcpy_s(OutputChar, MAX_SENTENCE, "CRDC is running...");
 		}
+#endif
+
+#ifdef CONSENSUS_ECOR
+		else if(dlgRef.m_ECOR_Dlg.ECOR_Busy_Flag){
+			strcpy_s(OutputChar, MAX_SENTENCE, "ECOR is running...");
+		}
+#endif
+
+#ifdef CONSENSUS_CDOC
+		else if(dlgRef.m_CDOC_Dlg.CDOC_Busy_Flag){
+			strcpy_s(OutputChar, MAX_SENTENCE, "CDOC is running...");
+		}
+#endif
+#ifdef CONSENSUS_ENET
+		else if(dlgRef.m_CENET_Dlg.CENET_Busy_Flag){
+			strcpy_s(OutputChar, MAX_SENTENCE, "ENET is running...");
+		}
+#endif
 		else{
 			strcpy_s(OutputChar, MAX_SENTENCE, "Consensus is ready...");
 		}
@@ -321,9 +423,30 @@ void CConsensus_Dlg::OnBnClickedCorpusPathButton()
 		Fpath = Fpath.Left(Fpath.ReverseFind('\\') + 1);
 		Fname = OpenDialog. GetFileName();
 		m_CorpusEdit.SetWindowTextW(Fpath);
-		CorpusFolder = NLPOP::CString2string(Fpath);
+		ACECorpusFolder = NLPOP::CString2string(Fpath);
 	}
+	Enable_Usable_Button();
 }
+void CConsensus_Dlg::Enable_Usable_Button()
+{
+
+#ifdef CONSENSUS_CEDT
+	m_CCEDT_Dlg.Enable_Usable_Button_CEDT();
+#endif
+
+#ifdef CONSENSUS_CRDC
+	m_CCRDC_Dlg.Enable_Usable_Button_CRDC();
+#endif
+
+#ifdef CONSENSUS_CDOC
+	m_CDOC_Dlg.Enable_Usable_Button_CDOC();
+#endif
+
+#ifdef CONSENSUS_ENET
+	m_CENET_Dlg.Enable_Usable_Button_ENET();
+#endif
+}
+
 
 void CConsensus_Dlg::OnBnClickedDataPathButton()
 {
@@ -335,9 +458,10 @@ void CConsensus_Dlg::OnBnClickedDataPathButton()
 		Fpath = OpenDialog.GetPathName();
 		Fpath = Fpath.Left(Fpath.ReverseFind('\\') + 1);
 		Fname = OpenDialog. GetFileName();
-		m_DataEdit.SetWindowTextW(Fpath);
-		DataFolder = NLPOP::CString2string(Fpath);
+		m_GigawordEdit.SetWindowTextW(Fpath);
+		GigawordFolder = NLPOP::CString2string(Fpath);
 	}
+	Enable_Usable_Button();
 }
 
 void CConsensus_Dlg::Output_MSG(const char* outchar, WPARAM wParam = 0)
@@ -349,23 +473,34 @@ void CConsensus_Dlg::Output_MSG(const char* outchar, WPARAM wParam = 0)
 		if(WaitForSingleObject(m_E_MessageListEvent, RESPONCE_WAIT_TIME) == WAIT_OBJECT_0){	
 			outpusmsg_l.push_back(outchar);// put product	
 		}
-		ReleaseSemaphore(m_S_Consumer, 1, NULL);// relase comsumer’s semaphore
+		ReleaseSemaphore(m_S_Consumer, 1, NULL);//
 		SetEvent(m_E_MessageListEvent);// set event to signal
 	}
 	PostThreadMessage(msgphreadId, WM_MESSAGE, (WPARAM)wParam, (LPARAM)0);
 }
 
 
+void STeller_Responce_Message(const char* poutstr)
+{
+	G_pSTeller->STeller_Output_Port(poutstr);
+		
+}
 
 void CConsensus_Dlg::OnBnClickedPadButton()
 {
-	CConsensusApp *app = (CConsensusApp *)AfxGetApp();
-	if(!Notification_Pad_Flag){
-		app->m_STeller.ShowWindow(SW_SHOW);
-		Notification_Pad_Flag = true;
+	//CConsensusApp *app = (CConsensusApp *)AfxGetApp();
+	if(!m_pSTeller->IsWindowVisible()){
+		m_pSTeller->ShowWindow(SW_SHOW);
+		STeller_Responce_Message("");
 	}
 	else{
-		app->m_STeller.ShowWindow(SW_HIDE);
-		Notification_Pad_Flag = false;
+		m_pSTeller->ShowWindow(SW_HIDE);
 	}
 }
+
+void STeller_Responce_Message_with_Save(const char* poutstr)
+{
+	G_pSTeller->STeller_Output_Port_with_Save(poutstr);
+}
+
+

@@ -45,7 +45,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="F:\YPench\boost_1_38_0\boost;F:\YPench\ConsensusGraph\Consensus\Consensus\Include"
+				AdditionalIncludeDirectories="F:\YPench\ConsensusGraph\Consensus\Consensus\Include\wn;F:\YPench\ConsensusGraph\EXE\CExtra\CExtra\Include;F:\Toolkit\boost_1_38_0;F:\YPench\ConsensusGraph\EXE\MaxEnt\MaxEnt\Include;F:\YPench\ConsensusGraph\Consensus\Consensus\Include"
 				PreprocessorDefinitions="WIN32;_WINDOWS;_DEBUG"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -68,7 +68,11 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
+				UseLibraryDependencyInputs="true"
 				LinkIncremental="1"
+				SuppressStartupBanner="false"
+				AdditionalLibraryDirectories=""
+				GenerateManifest="false"
 				GenerateDebugInformation="true"
 				SubSystem="2"
 				TargetMachine="1"
@@ -126,11 +130,13 @@
 				Name="VCCLCompilerTool"
 				Optimization="2"
 				EnableIntrinsicFunctions="true"
-				AdditionalIncludeDirectories="F:\YPench\boost_1_38_0\boost;F:\YPench\ConsensusGraph\Consensus\Consensus\Include"
+				AdditionalIncludeDirectories="F:\YPench\ConsensusGraph\EXE\MaxEnt\MaxEnt\Include;F:\YPench\boost_1_38_0\boost;F:\YPench\ConsensusGraph\Consensus\Consensus\Include"
 				PreprocessorDefinitions="WIN32;_WINDOWS;NDEBUG"
 				MinimalRebuild="false"
+				ExceptionHandling="1"
+				BasicRuntimeChecks="0"
 				RuntimeLibrary="0"
-				EnableFunctionLevelLinking="true"
+				EnableFunctionLevelLinking="false"
 				UsePrecompiledHeader="2"
 				WarningLevel="3"
 				DebugInformationFormat="3"
@@ -188,6 +194,48 @@
 			UniqueIdentifier="{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}"
 			>
 			<File
+				RelativePath=".\res\bin00001.bin"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\res\bin00002.bin"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\..\EXE\CExtra\Release\CExtra.lib"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
 				RelativePath=".\res\Consensus.ico"
 				>
 			</File>
@@ -200,14 +248,15 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\ICTCLAS50_Windows_32_C\API\ICTCLAS50.lib"
+				RelativePath="..\..\..\Toolkit\ICTCLAS50_Windows_32_C\API\ICTCLAS50.lib"
 				>
 			</File>
 			<File
-				RelativePath="..\..\EXE\Fortran\lbfgs\lbfgs\Release\lbfgs.lib"
+				RelativePath="..\..\..\Toolkit\igraph-0.7.1-msvc\Debug\igraph.lib"
 				>
 				<FileConfiguration
-					Name="Debug|Win32"
+					Name="Release|Win32"
+					ExcludedFromBuild="true"
 					>
 					<Tool
 						Name="VCCustomBuildTool"
@@ -215,11 +264,31 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath="..\..\..\Toolkit\igraph-0.7.1-msvc\Release\igraph.lib"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\..\EXE\Fortran\lbfgs\lbfgs\Release\lbfgs.lib"
+				>
+			</File>
+			<File
 				RelativePath=".\ReadMe.txt"
 				>
 			</File>
 			<File
 				RelativePath=".\Resource.h"
+				>
+			</File>
+			<File
+				RelativePath=".\res\rt_manif.bin"
 				>
 			</File>
 			<File
@@ -251,7 +320,31 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\xerces-c-3.1.1-x86-windows-vc-9.0\lib\xerces-c_3.lib"
+				RelativePath=".\res\windows.manifest"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\WordNet\lib\wn.lib"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\..\..\Toolkit\xerces-c-3.1.1-x86-windows-vc-9.0\lib\xerces-c_3.lib"
 				>
 			</File>
 		</Filter>
@@ -265,6 +358,20 @@
 			<File
 				RelativePath=".\CRDC\CRDC.h"
 				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+					/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\CRDC\CRDC_Dlg.cpp"
@@ -273,6 +380,20 @@
 			<File
 				RelativePath=".\CRDC\CRDC_Dlg.h"
 				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+					/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\CRDC\GREval.cpp"
@@ -281,6 +402,20 @@
 			<File
 				RelativePath=".\CRDC\GREval.h"
 				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+					/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\CRDC\GRIns.cpp"
@@ -289,6 +424,20 @@
 			<File
 				RelativePath=".\CRDC\GRIns.h"
 				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+					/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\CRDC\RCCom.cpp"
@@ -297,6 +446,20 @@
 			<File
 				RelativePath=".\CRDC\RCCom.h"
 				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+					/>
+				</FileConfiguration>
 			</File>
 		</Filter>
 		<Filter
@@ -309,6 +472,20 @@
 			<File
 				RelativePath=".\Include\ace.h"
 				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+					/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\Include\CGCom.cpp"
@@ -325,6 +502,24 @@
 			<File
 				RelativePath=".\Include\CMaxmatch.h"
 				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\Include\Config.h"
+				>
 			</File>
 			<File
 				RelativePath=".\Include\ConvertUTF.cpp"
@@ -333,6 +528,20 @@
 			<File
 				RelativePath=".\Include\ConvertUTF.h"
 				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+					/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\Include\CSegmter.cpp"
@@ -341,6 +550,20 @@
 			<File
 				RelativePath=".\Include\CSegmter.h"
 				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+					/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\Include\maxen.cpp"
@@ -351,12 +574,34 @@
 				>
 			</File>
 			<File
+				RelativePath=".\Include\Parser.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\Include\Parser.h"
+				>
+			</File>
+			<File
 				RelativePath=".\Include\SXMLer.cpp"
 				>
 			</File>
 			<File
 				RelativePath=".\Include\SXMLer.h"
 				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+					/>
+				</FileConfiguration>
 			</File>
 			<Filter
 				Name="maxen"
@@ -368,22 +613,92 @@
 				<File
 					RelativePath=".\Include\maxen\display.hpp"
 					>
+					<FileConfiguration
+						Name="Debug|Win32"
+						>
+						<Tool
+							Name="VCCustomBuildTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|Win32"
+						>
+						<Tool
+							Name="VCCustomBuildTool"
+						/>
+					</FileConfiguration>
 				</File>
 				<File
 					RelativePath=".\Include\maxen\eventspace.hpp"
 					>
+					<FileConfiguration
+						Name="Debug|Win32"
+						>
+						<Tool
+							Name="VCCustomBuildTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|Win32"
+						>
+						<Tool
+							Name="VCCustomBuildTool"
+						/>
+					</FileConfiguration>
 				</File>
 				<File
 					RelativePath=".\Include\maxen\eventspace.tcc"
 					>
+					<FileConfiguration
+						Name="Debug|Win32"
+						>
+						<Tool
+							Name="VCCustomBuildTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|Win32"
+						>
+						<Tool
+							Name="VCCustomBuildTool"
+						/>
+					</FileConfiguration>
 				</File>
 				<File
 					RelativePath=".\Include\maxen\ext_algorithm.hpp"
 					>
+					<FileConfiguration
+						Name="Debug|Win32"
+						>
+						<Tool
+							Name="VCCustomBuildTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|Win32"
+						>
+						<Tool
+							Name="VCCustomBuildTool"
+						/>
+					</FileConfiguration>
 				</File>
 				<File
 					RelativePath=".\Include\maxen\finite.h"
 					>
+					<FileConfiguration
+						Name="Debug|Win32"
+						>
+						<Tool
+							Name="VCCustomBuildTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|Win32"
+						>
+						<Tool
+							Name="VCCustomBuildTool"
+						/>
+					</FileConfiguration>
 				</File>
 				<File
 					RelativePath=".\Include\maxen\gistrainer.cpp"
@@ -392,22 +707,92 @@
 				<File
 					RelativePath=".\Include\maxen\gistrainer.hpp"
 					>
+					<FileConfiguration
+						Name="Debug|Win32"
+						>
+						<Tool
+							Name="VCCustomBuildTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|Win32"
+						>
+						<Tool
+							Name="VCCustomBuildTool"
+						/>
+					</FileConfiguration>
 				</File>
 				<File
 					RelativePath=".\Include\maxen\itemmap.hpp"
 					>
+					<FileConfiguration
+						Name="Debug|Win32"
+						>
+						<Tool
+							Name="VCCustomBuildTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|Win32"
+						>
+						<Tool
+							Name="VCCustomBuildTool"
+						/>
+					</FileConfiguration>
 				</File>
 				<File
 					RelativePath=".\Include\maxen\itemmap.tcc"
 					>
+					<FileConfiguration
+						Name="Debug|Win32"
+						>
+						<Tool
+							Name="VCCustomBuildTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|Win32"
+						>
+						<Tool
+							Name="VCCustomBuildTool"
+						/>
+					</FileConfiguration>
 				</File>
 				<File
 					RelativePath=".\Include\maxen\lbfgs.f"
 					>
+					<FileConfiguration
+						Name="Debug|Win32"
+						>
+						<Tool
+							Name="VCCustomBuildTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|Win32"
+						>
+						<Tool
+							Name="VCCustomBuildTool"
+						/>
+					</FileConfiguration>
 				</File>
 				<File
 					RelativePath=".\Include\maxen\lbfgs.h"
 					>
+					<FileConfiguration
+						Name="Debug|Win32"
+						>
+						<Tool
+							Name="VCCustomBuildTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|Win32"
+						>
+						<Tool
+							Name="VCCustomBuildTool"
+						/>
+					</FileConfiguration>
 				</File>
 				<File
 					RelativePath=".\Include\maxen\lbfgs_wrapper.cpp"
@@ -420,14 +805,56 @@
 				<File
 					RelativePath=".\Include\maxen\lbfgstrainer.hpp"
 					>
+					<FileConfiguration
+						Name="Debug|Win32"
+						>
+						<Tool
+							Name="VCCustomBuildTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|Win32"
+						>
+						<Tool
+							Name="VCCustomBuildTool"
+						/>
+					</FileConfiguration>
 				</File>
 				<File
 					RelativePath=".\Include\maxen\line_mem_iterator.hpp"
 					>
+					<FileConfiguration
+						Name="Debug|Win32"
+						>
+						<Tool
+							Name="VCCustomBuildTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|Win32"
+						>
+						<Tool
+							Name="VCCustomBuildTool"
+						/>
+					</FileConfiguration>
 				</File>
 				<File
 					RelativePath=".\Include\maxen\line_stream_iterator.hpp"
 					>
+					<FileConfiguration
+						Name="Debug|Win32"
+						>
+						<Tool
+							Name="VCCustomBuildTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|Win32"
+						>
+						<Tool
+							Name="VCCustomBuildTool"
+						/>
+					</FileConfiguration>
 				</File>
 				<File
 					RelativePath=".\Include\maxen\maxentmodel.cpp"
@@ -436,10 +863,38 @@
 				<File
 					RelativePath=".\Include\maxen\maxentmodel.hpp"
 					>
+					<FileConfiguration
+						Name="Debug|Win32"
+						>
+						<Tool
+							Name="VCCustomBuildTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|Win32"
+						>
+						<Tool
+							Name="VCCustomBuildTool"
+						/>
+					</FileConfiguration>
 				</File>
 				<File
 					RelativePath=".\Include\maxen\meevent.hpp"
 					>
+					<FileConfiguration
+						Name="Debug|Win32"
+						>
+						<Tool
+							Name="VCCustomBuildTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|Win32"
+						>
+						<Tool
+							Name="VCCustomBuildTool"
+						/>
+					</FileConfiguration>
 				</File>
 				<File
 					RelativePath=".\Include\maxen\modelfile.cpp"
@@ -448,14 +903,56 @@
 				<File
 					RelativePath=".\Include\maxen\modelfile.hpp"
 					>
+					<FileConfiguration
+						Name="Debug|Win32"
+						>
+						<Tool
+							Name="VCCustomBuildTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|Win32"
+						>
+						<Tool
+							Name="VCCustomBuildTool"
+						/>
+					</FileConfiguration>
 				</File>
 				<File
 					RelativePath=".\Include\maxen\rfevent.hpp"
 					>
+					<FileConfiguration
+						Name="Debug|Win32"
+						>
+						<Tool
+							Name="VCCustomBuildTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|Win32"
+						>
+						<Tool
+							Name="VCCustomBuildTool"
+						/>
+					</FileConfiguration>
 				</File>
 				<File
 					RelativePath=".\Include\maxen\token_mem_iterator.hpp"
 					>
+					<FileConfiguration
+						Name="Debug|Win32"
+						>
+						<Tool
+							Name="VCCustomBuildTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|Win32"
+						>
+						<Tool
+							Name="VCCustomBuildTool"
+						/>
+					</FileConfiguration>
 				</File>
 				<File
 					RelativePath=".\Include\maxen\trainer.cpp"
@@ -464,6 +961,20 @@
 				<File
 					RelativePath=".\Include\maxen\trainer.hpp"
 					>
+					<FileConfiguration
+						Name="Debug|Win32"
+						>
+						<Tool
+							Name="VCCustomBuildTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|Win32"
+						>
+						<Tool
+							Name="VCCustomBuildTool"
+						/>
+					</FileConfiguration>
 				</File>
 			</Filter>
 		</Filter>

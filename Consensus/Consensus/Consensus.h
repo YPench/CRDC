@@ -10,7 +10,7 @@
 #include "resource.h"		// main symbols
 
 #include "Consensus_Dlg.h"
-#include "STeller_Dlg.h"
+
 // CConsensusApp:
 // See Consensus.cpp for the implementation of this class
 //
@@ -19,7 +19,6 @@ class CConsensusApp : public CWinApp
 {
 public:
 	CConsensusApp();
-
 // Overrides
 	public:
 	virtual BOOL InitInstance();
@@ -30,7 +29,8 @@ public:
 
 public:
 	CConsensus_Dlg* pdlg;
-	STeller_Dlg m_STeller;
+	//STeller_Dlg* m_pSTeller;
+	
 
 	string teststr;
 

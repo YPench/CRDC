@@ -5,15 +5,21 @@
 #include "ConvertUTF.h"
 
 
+string Detect_Single_NE_TYPE;
+bool Collect_nGross_Boundary_Info;
+bool Collect_nGross_Candidate_Info;
+map<string, pair<size_t, size_t>> G_P_nCrossRtn_m;
+map<string, pair<size_t, size_t>> G_R_nCrossRtn_m;
+
+extern void STeller_Responce_Message(const char* poutstr);
+extern void STeller_Responce_Message_with_Save(const char* poutstr);
+
 void AppCall::Secretary_Hide()
 {
-	
 }
 void AppCall::Secretary_Show()
 {
-	
 }
-
 
 void AppCall::Response_Diplay(string sout, DWORD MessageType = 0)
 {
@@ -22,15 +28,18 @@ void AppCall::Response_Diplay(string sout, DWORD MessageType = 0)
 
 void AppCall::Maxen_Responce_Message(const char* poutstr)
 {
-
-	CConsensusApp *app = (CConsensusApp *)AfxGetApp();
-	app->m_STeller.STeller_Output_Port(poutstr);
+	STeller_Responce_Message(poutstr);
 }
 void AppCall::Maxen_Responce_Message_with_Save(const char* poutstr)
 {
-	CConsensusApp *app = (CConsensusApp *)AfxGetApp();
-	app->m_STeller.STeller_Output_Port_with_Save(poutstr);
+	STeller_Responce_Message_with_Save(poutstr);
 }
+
+int AppCall::Secretary_Message_Box(const char* cmsg)
+{
+	return AppCall::Secretary_Message_Box(cmsg, MB_OK);
+}
+
 int AppCall::Secretary_Message_Box(string msgstr, UINT nType = MB_OK)
 {
 	CConsensusApp *app = (CConsensusApp *)AfxGetApp();
@@ -46,6 +55,144 @@ void AppCall::Consensus_Responce_Message(string msgstr, UINT nType)
 	//outpusmsg = msgstr;
 //	DWORD msgphreadId =app->pdlg->msgphreadId;
 	//PostThreadMessage(app->pdlg->msgphreadId, WM_MESSAGE, (WPARAM)nType, (LPARAM)outpusmsg.c_str());
+}
+
+void AppCall::Load_Document_Events_Info(const char* loadpath, map<string, size_t>& DocID2Event_m)
+{
+	char getlineBuf[MAX_DOC_BUFFER];
+	size_t doc_cnt;
+	size_t EventID;
+
+	ifstream in(loadpath);
+	if(in.bad())
+		return;
+	in.clear();
+	in.seekg(0, ios::beg);
+	if(in.peek() == EOF){
+		in.close();
+		return;
+	}
+	in >> doc_cnt;
+	in.getline(getlineBuf, MAX_DOC_BUFFER,'\n');
+	for(size_t i = 0; i < doc_cnt; i++){
+		in.getline(getlineBuf, MAX_DOC_BUFFER,'\t');
+		in >> EventID;
+		DocID2Event_m.insert(make_pair(getlineBuf, EventID));
+		in.getline(getlineBuf, MAX_DOC_BUFFER,'\n');
+	}
+
+	in.close();
+	return;
+}
+void AppCall::Load_Document_Events_Info(const char* loadpath, map<string, size_t>& DocID2Event_m, vector<vector<string>*>& EventTopTerm_v)
+{
+	char getlineBuf[MAX_DOC_BUFFER];
+	size_t doc_cnt;
+	size_t EventID;
+
+	ifstream in(loadpath);
+	if(in.bad())
+		return;
+	in.clear();
+	in.seekg(0, ios::beg);
+	if(in.peek() == EOF){
+		in.close();
+		return;
+	}
+	in >> doc_cnt;
+	in.getline(getlineBuf, MAX_DOC_BUFFER,'\n');
+	for(size_t i = 0; i < doc_cnt; i++){
+		in.getline(getlineBuf, MAX_DOC_BUFFER,'\t');
+		in >> EventID;
+		DocID2Event_m.insert(make_pair(getlineBuf, EventID));
+		in.getline(getlineBuf, MAX_DOC_BUFFER,'\n');
+	}
+	in >> doc_cnt;
+	in.getline(getlineBuf, MAX_DOC_BUFFER,'\n');
+	while(in.peek() != EOF){
+		in.getline(getlineBuf, MAX_DOC_BUFFER,'\n');
+		istringstream instream(getlineBuf);
+		vector<string>* pTerm_v = new vector<string>;
+		EventTopTerm_v.push_back(pTerm_v);
+		while(instream.peek() != EOF){
+			instream.getline(getlineBuf, MAX_DOC_BUFFER,';');
+			pTerm_v->push_back(getlineBuf);
+		}
+	}
+	in.close();
+}
+string AppCall::Subsection_Responce_Message_Memo(const char* memochar)
+{
+	ostringstream ostream;
+	
+	ostream << "\n\n\n\
+****************************************************************************\n\
+****************************************************************************\n\
+***********                                                                                               ***********\n\
+***********                                   ";
+ostream << memochar;
+ostream << "                                ***********\n\
+***********                                                                                               ***********\n\
+****************************************************************************\n\
+****************************************************************************\n\n";
+
+	return ostream.str();
+}
+
+void AppCall::Console_Running_with_Output_Redirection(const char* cImplementFolder, const char* parameters,  const char* outputFile)
+{
+	if(strlen(parameters) == 0){
+		AppCall::Secretary_Message_Box("File or Parameters not exist in: CCRF::CRF_Training_Port()", MB_OK);
+		return;
+	}
+
+	wchar_t awParameters[256];
+	wchar_t awOutputFileName[256];
+
+	SCONVERT::AnsiToUnicode(outputFile, awOutputFileName);
+	SCONVERT::AnsiToUnicode(parameters, awParameters);
+
+	TCHAR cmdline[1024];
+	_tcscpy_s(cmdline, 1024, awParameters);
+
+	DeleteFile(awOutputFileName);
+
+	SECURITY_ATTRIBUTES sa={sizeof ( sa ),NULL,TRUE};
+    SECURITY_ATTRIBUTES *psa=NULL; 
+    DWORD dwShareMode=FILE_SHARE_READ|FILE_SHARE_WRITE;  
+    OSVERSIONINFO osVersion={0};  
+    osVersion.dwOSVersionInfoSize =sizeof ( osVersion );  
+    if(GetVersionEx(&osVersion)){  
+        if(osVersion.dwPlatformId ==VER_PLATFORM_WIN32_NT)  {  
+            psa=&sa;
+            dwShareMode|=FILE_SHARE_DELETE;  
+        }  
+    }
+	HANDLE hConsoleRedirect = CreateFile(  
+								awOutputFileName,  
+								GENERIC_WRITE,  
+								dwShareMode,  
+								psa,  
+								OPEN_ALWAYS,  
+								FILE_ATTRIBUTE_NORMAL,  
+								NULL );  
+	ASSERT(hConsoleRedirect!=INVALID_HANDLE_VALUE );
+
+
+    STARTUPINFO si={sizeof(si)};  
+    si.dwFlags =STARTF_USESHOWWINDOW|STARTF_USESTDHANDLES;//使用标准柄和显示窗口  
+    si.hStdOutput =hConsoleRedirect;//将文件作为标准输出句柄  
+    si.wShowWindow =SW_HIDE;//隐藏控制台窗口  
+    PROCESS_INFORMATION pi={0};
+	memset(&pi, 0, sizeof(pi));
+
+//	if(CreateProcess(NULL, cmdline,NULL,NULL,TRUE,NULL,NULL, _T(cImplementFolder),&si,&pi))  { 
+	if(CreateProcess(NULL, cmdline,NULL,NULL,TRUE,NULL,NULL,NLPOP::string2CString(cImplementFolder),&si,&pi))  {
+        WaitForSingleObject(pi.hProcess, INFINITE);  
+        CloseHandle(pi.hProcess);  
+        CloseHandle(pi.hThread);
+    }  
+    CloseHandle(hConsoleRedirect);
 }
 
 BOOL AppCall::Consensus_Open_Process(string beoperpath, string exepath)
@@ -67,6 +214,73 @@ BOOL AppCall::Consensus_Open_Process(string beoperpath, string exepath)
 
 	return CreateProcess(tempExeRoot, tempCmdLine, NULL, NULL, TRUE, ABOVE_NORMAL_PRIORITY_CLASS, NULL, NULL, &si, &processInformation);
 }
+
+void NLPOP::LoadNotesMapMerge(string notespath, map<string, string>& locmap)
+{
+	ifstream in(notespath.c_str());
+	if(in.bad())
+		return;
+	in.clear();
+	in.seekg(0, ios::beg);
+	if(in.peek() == EOF)
+		return;
+	
+	string vocable;
+	string notes;
+	char buffer[MAX_SENTENCE];
+
+	while(true)
+	{
+		in.getline(buffer, MAX_SENTENCE, ',');
+		vocable= buffer;
+		in.getline(buffer, MAX_SENTENCE, '#');
+		notes= buffer;
+
+		if(in.peek() == EOF)
+		 break;
+		locmap.insert(make_pair(vocable, notes));	
+	}
+	in.close();
+	return;
+}
+
+void NLPOP::Load_String_to_String_Mapping(const char* cFilePath, map<string, string>& pmString2String_m)
+{
+	char FirstBuf[MAX_SENTENCE];
+	char SecondBuf[MAX_SENTENCE];
+	ifstream in(cFilePath);
+	if(in.bad()){
+		in.close();
+		return ;
+	}
+	in.clear();
+	in.seekg(0, ios::beg);
+	while(in.peek() != EOF){
+		in.getline(FirstBuf, MAX_SENTENCE,'\t');
+		in.getline(SecondBuf, MAX_SENTENCE,'\n');
+		pmString2String_m.insert(make_pair(FirstBuf, SecondBuf));
+	} 
+	in.close();
+}
+
+void NLPOP::Save_String_to_String_Mapping(const char* cFilePath, map<string, string>& pmString2String_m)
+{
+	FILE * fout;
+	if(fopen_s(&fout, cFilePath, "w")){
+		AppCall::Secretary_Message_Box("Error to Open File in: NLPOP::Save_String_to_String_Mapping()");
+	}
+	for(map<string, string>::iterator mite = pmString2String_m.begin(); mite != pmString2String_m.end(); mite++){
+		fprintf(fout, mite->first.c_str());
+		fprintf(fout, "\t");
+		fprintf(fout, mite->second.c_str());
+		fprintf(fout, "\n");
+	}
+	fclose(fout);
+
+}
+
+
+
 void NLPOP::charseq_to_vector(const char* pcharseq, vector<string>& pvector)
 {
 	char sChar[3];
@@ -101,12 +315,32 @@ void NLPOP::Converting_strng_set_into_2Gram_set(set<string>& pmSet)
 	}
 }
 
+bool NLPOP::prix_substring_matching(const char* allchar, const char* subchar)
+{
+	size_t sublenght = strlen(subchar);
+	if(strlen(allchar) < sublenght){
+		return false;
+	}
+	for(size_t i = 0; i < sublenght; i++){
+		if(allchar[i] != subchar[i]){
+			return false;
+		}
+	}
+	return true;
+}
+bool NLPOP::prox_substring_matching(const char* allchar, const char* subchar)
+{
+
+
+
+	return false;
+}
+
 
 size_t NLPOP::Get_Chinese_Sentence_Length_Counter(const char* contentchar){
 
-	size_t cnt;
+	size_t cnt = 0;
 	size_t length = strlen(contentchar);
-	cnt = 0;
 	for(size_t i = 0; i < length; ){	
 		if(contentchar[i++] < 0 ){
 			i++;
@@ -115,7 +349,27 @@ size_t NLPOP::Get_Chinese_Sentence_Length_Counter(const char* contentchar){
 	}
 	return cnt;
 }
+void NLPOP::Segmenting_TEXT_into_Sentences_By_Character(const char* cSent, set<string>& PBreakpoint_s, vector<string>& pmSent_v)
+{
+	char SentenceBuf[MAX_SENTENCE];
+	char sChar[3];
+	sChar[2]=0;
+	size_t SentLength = strlen(cSent);
 
+	strcpy_s(SentenceBuf, MAX_SENTENCE, "");
+	for(size_t i = 0; i < SentLength; ){
+		sChar[0] = cSent[i++];
+		sChar[1] = 0;	
+		if(sChar[0] < 0 ){
+			sChar[1] = cSent[i++];
+		}
+		strcat_s(SentenceBuf, MAX_SENTENCE, sChar);
+		if(PBreakpoint_s.find(sChar) != PBreakpoint_s.end()){
+			pmSent_v.push_back(SentenceBuf);
+			strcpy_s(SentenceBuf, MAX_SENTENCE, "");
+		}
+	}
+}
 void NLPOP::merging_numbers(string& stringref, set<string>& Number_Set)
 {
 	stringref = NLPOP::merging_numbers(stringref.c_str(), Number_Set);
@@ -380,52 +634,72 @@ void NLPOP::LoadWordData_AS_Map_string_MorphstrSet(string pmWDpath, map<string, 
 	return;
 }
 
-
+void NLPOP::Get_Child_Folders(string pmFolderPath, vector<string>& FilesRoot_v)
+{
+	CString csFilePath = NLPOP::string2CString(pmFolderPath);
+	if(!NLPOP::FolderExist(csFilePath)){
+		return;
+	}
+	CFileFind foldpath;
+	BOOL bFind = foldpath.FindFile(csFilePath + _T("*.*")); 
+	if(!bFind){
+		return;
+	}
+	while(bFind = foldpath.FindNextFile())   {  
+		csFilePath = foldpath.GetFilePath();
+		if(foldpath.IsDots())   
+			continue;
+		if(foldpath.IsDirectory()){
+			csFilePath += _T("\\");
+			FilesRoot_v.push_back(NLPOP::CString2string(csFilePath));
+		}	
+    }
+	csFilePath = foldpath.GetFilePath();
+	if(foldpath.IsDots()){
+		return;
+	}
+	if(foldpath.IsDirectory()){
+		csFilePath += _T("\\");
+		FilesRoot_v.push_back(NLPOP::CString2string(csFilePath));
+	}
+}
 void NLPOP::Get_Specified_Files(string pmFolderPath, vector<string>& FilesRoot_v, string DotAddSuffix = ".txt")
 {
 	string proxstr;
 	CString csFilePath = NLPOP::string2CString(pmFolderPath);
 	CFileFind foldpath;
 	BOOL bFind = foldpath.FindFile(csFilePath + _T("*.*")); 
-	if(!bFind)
-	{
+	if(!bFind){
 		return;
 	}
-	while(bFind = foldpath.FindNextFile())  
-    {  
+	while(bFind = foldpath.FindNextFile())   {  
 		csFilePath = foldpath.GetFilePath();
 		if(foldpath.IsDots())   
 			continue;
-		if(foldpath.IsDirectory())
-		{
+		if(foldpath.IsDirectory()){
 			csFilePath += _T("\\");
 			Get_Specified_Files(NLPOP::CString2string(csFilePath) , FilesRoot_v, DotAddSuffix);
 		}
-		
-
 		proxstr = NLPOP::CString2string(csFilePath);
 		proxstr = proxstr.substr(proxstr.rfind('\\') + 1, proxstr.length());
 		if(proxstr.size() == 0)
 			continue;
-		if(proxstr.rfind('.') == -1)
-		{
+		if(DotAddSuffix.length()  == 0){
 			FilesRoot_v.push_back(NLPOP::CString2string(csFilePath));
 			continue;
 		}
-		if(0 == DotAddSuffix.length()){
-			FilesRoot_v.push_back(NLPOP::CString2string(csFilePath));
+		if(string::npos == proxstr.rfind('.')){
 			continue;
 		}
-		if(csFilePath.Right(csFilePath.GetLength() - csFilePath.ReverseFind('.')) != DotAddSuffix.c_str())
-			continue;
-
-		FilesRoot_v.push_back(NLPOP::CString2string(csFilePath));
+		if(!strcmp(DotAddSuffix.c_str(), proxstr.substr(proxstr.rfind('.'), proxstr.length()-proxstr.rfind('.')).c_str())){
+			FilesRoot_v.push_back(NLPOP::CString2string(csFilePath));
+		}	
     }
 	csFilePath = foldpath.GetFilePath();
-	if(foldpath.IsDots())   
-			return;
-	if(foldpath.IsDirectory())
-	{
+	if(foldpath.IsDots()){
+		return;
+	}
+	if(foldpath.IsDirectory()){
 		csFilePath += _T("\\");
 		Get_Specified_Files(NLPOP::CString2string(csFilePath) , FilesRoot_v, DotAddSuffix);
 	}
@@ -433,20 +707,16 @@ void NLPOP::Get_Specified_Files(string pmFolderPath, vector<string>& FilesRoot_v
 	proxstr = proxstr.substr(proxstr.rfind('\\') + 1, proxstr.length());
 	if(proxstr.size() == 0)
 		return;
-	if(proxstr.rfind('.') == -1)
-	{
+	if(DotAddSuffix.length()  == 0){
 		FilesRoot_v.push_back(NLPOP::CString2string(csFilePath));
 		return;
 	}
-	proxstr = proxstr.substr(proxstr.rfind('.'), proxstr.length());
-	
-	if(0 == DotAddSuffix.length()){
-		FilesRoot_v.push_back(NLPOP::CString2string(csFilePath));
+	if(string::npos == proxstr.rfind('.')){
 		return;
 	}
-
-	if((strcmp(proxstr.c_str(), DotAddSuffix.c_str()) == 0 ) && (proxstr.size() != 0))
+	if(!strcmp(DotAddSuffix.c_str(), proxstr.substr(proxstr.rfind('.'), proxstr.length()-proxstr.rfind('.')).c_str())){
 		FilesRoot_v.push_back(NLPOP::CString2string(csFilePath));
+	}	
 }
 string NLPOP::CString2string(CString str)
 {
@@ -498,6 +768,21 @@ BOOL NLPOP::FileExist(CString strFileName)
 {
       CFileFind fFind;
      return fFind.FindFile(strFileName); 
+}
+void NLPOP::Checking_Dir_if_none_then_Greate(string filename)
+{
+	if(NLPOP::FolderExist(NLPOP::string2CString(filename))){
+		return;
+	}
+	_mkdir(filename.c_str());
+}
+
+void NLPOP::Delete_Dir_and_Grate(string filename)
+{
+	if(NLPOP::FolderExist(NLPOP::string2CString(filename))){
+		NLPOP::DeleteDir(NLPOP::string2CString(filename));
+	}
+	_mkdir(filename.c_str());
 }
 
 BOOL NLPOP::CreateFolder(CString strPath)

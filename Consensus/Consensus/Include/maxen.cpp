@@ -13,6 +13,106 @@ extern bool Collect_nGross_Candidate_Info;
 extern Maxen_Rtn_map G_P_nCrossRtn_m;
 extern Maxen_Rtn_map G_R_nCrossRtn_m;
 
+void MAXEN::Output_Extract_Feature_Context_For_Maxent(const char* FilePath, DulTYPE_Vctor& RelationWrods_v)
+{
+	ofstream out(FilePath);
+	if(out.bad())
+		return;
+	out.clear();
+	out.seekp(0, ios::beg);
+
+	DulTYPE_Vctor::iterator mmite = RelationWrods_v.begin();
+	for(; mmite != RelationWrods_v.end(); mmite++){
+		for(vector<pair<string, float>>::iterator  vite = (*mmite)->second.begin(); vite != (*mmite)->second.end(); vite++){
+			out << vite->first << ';' << vite->second << ';';
+		}
+		out << endl << (*mmite)->first.first << ";" << (*mmite)->first.second << endl;
+	}
+	out.close();
+}
+
+void MAXEN::Output_Extract_Feature_Context_For_Maxent(const char* FilePath, FeatureVctor& RelationWrods_v)
+{
+	ofstream out(FilePath);
+	if(out.bad())
+		return;
+	out.clear();
+	out.seekp(0, ios::beg);
+
+	FeatureVctor::iterator mmite = RelationWrods_v.begin();
+	for(; mmite != RelationWrods_v.end(); mmite++){
+		for(vector<pair<string, float>>::iterator  vite = (*mmite)->second.begin(); vite != (*mmite)->second.end(); vite++){
+			out << vite->first << ';' << vite->second << ';';
+		}
+		out << endl << (*mmite)->first << endl;
+	}
+	out.close();
+}
+void MAXEN::Coreference_Discriminating_with_Erasing(vector<pair<string, double>>& CoValue_v, FeatureVctor& Testing_v, MaxentModel& pmMaxen)
+{
+	Maxen_Rtn_map Recall_map;
+	Maxen_Rtn_map Pricision_map;
+	FeatureVctor::iterator pit;
+	vector<pair<string, double>>::iterator valueite = CoValue_v.begin();
+	for (pit = Testing_v.begin(); pit != Testing_v.end() || valueite != CoValue_v.end();  ){
+		if(!strcmp(valueite->first.c_str(), "Exclusive")){
+			valueite++;
+			continue;
+		}
+		if(pit == Testing_v.end()){
+			AppCall::Secretary_Message_Box("Data Error in: AXEN::Coreference_Discriminating_with_Erasing()");
+		}
+		
+		me_context_type& context_ref = (*pit)->second;
+		me_outcome_type predict_out= pmMaxen.predict(context_ref);
+		valueite->second = pmMaxen.eval(context_ref, valueite->first);
+		
+		//predict
+		if(Recall_map.find(predict_out) == Recall_map.end()){
+			Recall_map.insert(make_pair(predict_out, make_pair(0,0)));
+			Pricision_map.insert(make_pair(predict_out, make_pair(0,0)));
+		}
+		if(Recall_map.find(valueite->first) == Recall_map.end()){
+			Recall_map.insert(make_pair(valueite->first, make_pair(0,0)));
+			Pricision_map.insert(make_pair(valueite->first, make_pair(0,0)));
+		}
+		if(!strcmp(valueite->first.c_str(), predict_out.c_str())){
+			Recall_map[predict_out].first++;
+			Pricision_map[predict_out].first++;
+		}
+		Recall_map[valueite->first].second++;
+		Pricision_map[predict_out].second++;
+
+		valueite->first = predict_out;
+		
+		delete *pit;
+		pit++;
+		valueite++;
+    }
+	Testing_v.clear();
+	
+	MAXEN::Display_Performance_for_MAXEN(true, true, Pricision_map, Recall_map, AppCall::Subsection_Responce_Message_Memo("n-Gross Coreference Performance").c_str());
+
+	MAXEN::Collect_nGross_Performances(Pricision_map, Recall_map, G_P_nCrossRtn_m, G_R_nCrossRtn_m);
+
+}
+
+void MAXEN::Maxen_Recognizing_with_eval_Erasing(MaxentModel& pmMaxen, FeatureVctor& Recongizing_v, vector<pair<string,double>>& rtnValue_v)
+{
+	FeatureVctor::iterator it;
+
+	for (it = Recongizing_v.begin(); it != Recongizing_v.end(); ++it) {
+		me_context_type& context_ref = (*it)->second;
+		//===eval
+		string outtype = pmMaxen.predict(context_ref);
+		double value = pmMaxen.eval(context_ref, outtype);
+		rtnValue_v.push_back(make_pair(outtype, value));
+		delete *it;
+    }
+
+	Recongizing_v.clear();
+}
+
 void MAXEN::Init_Rtn_map_by_Designated_String(Maxen_Rtn_map& P_Rtn_m, Maxen_Rtn_map& R_Rtn_m, string& pmTYPE)
 {
 	if(P_Rtn_m.find(pmTYPE) == P_Rtn_m.end()){
@@ -153,7 +253,7 @@ void MAXEN::Push_Back_FeatureCase_v_from_Feature_v_with_Check(FeatureVctor& Trai
 	}
 
 	if(WordsCnt_map.empty()){
-		AppCall::Secretary_Message_Box("Case Feature is empty in CDetBound...", MB_OK);
+		AppCall::Secretary_Message_Box("Case Feature is empty in Push_Back_FeatureCase_v_from_Feature_v_with_Check...", MB_OK);
 	}
 	pair<string, vector<pair<string, float>>>* ploc_pair = new pair<string, vector<pair<string, float>>>;
 	ploc_pair->first = label;
@@ -546,6 +646,217 @@ void MAXEN::Maxen_Training_with_Erasing(FeatureVctor& Training_v, MaxentModel& p
 
 	pmMaxen.train(ite, "lbfgs", 0);
 }
+void MAXEN::cross_validation_with_Weight(FeatureVctor& v, size_t n, int iter, const string& method, double gaussian, bool random, double weight, const char* c_TYPE) 
+{
+	Training_Cases_Check(v);
+    FeatureVctor::iterator it;
+    //load_events(file, AddEventToVector(v));
+    if (v.size() < 5 * n)
+		AppCall::Secretary_Message_Box("data set is too small to perform cross_validation", MB_OK);
+    if (random) {
+        random_shuffle(v.begin(), v.end());
+    }
+	ostringstream ostream;
+    double total_acc = 0;
+	double total_Recall = 0;
+	double total_Precision = 0;
+	double F_Score = 0;
+    size_t step = v.size() / n;
+
+	Maxen_Rtn_map Recall_map;
+	Maxen_Rtn_map Pricision_map;
+	Maxen_Rtn_map total_R_map;
+	Maxen_Rtn_map total_P_map;
+
+    for (size_t i = 0; i < n; ++i) {
+		for(Maxen_Rtn_map::iterator mite =  Pricision_map.begin(); mite !=  Pricision_map.end(); mite++){
+			mite->second.first = 0;
+			mite->second.second = 0;
+		}
+		for(Maxen_Rtn_map::iterator mite =  Recall_map.begin(); mite !=  Recall_map.end(); mite++){
+			mite->second.first = 0;
+			mite->second.second = 0;
+		}
+        MaxentModel m;
+        m.begin_add_event();
+        m.add_FeatureVctor_events(v.begin(), v.begin() + i * step);
+        m.add_FeatureVctor_events(v.begin() + (i + 1) * step, v.end());
+        m.end_add_event();
+        m.train(iter, method, gaussian);
+
+        size_t correct = 0;
+        size_t count = 0;
+        for (it = v.begin() + i * step; it != v.begin() + (i + 1) * step; ++it) {
+			pair<string, vector<pair<string, float>>>& locpair = **it;
+			
+			double rtlvalue = m.eval(locpair.second, c_TYPE);
+			me_outcome_type predict_out;
+			if(rtlvalue >= weight){
+				predict_out = c_TYPE;
+			}
+			else{
+				predict_out = NEGETIVE;
+			}
+
+			if(Recall_map.find(locpair.first) == Recall_map.end()){
+				Recall_map.insert(make_pair(locpair.first, make_pair(0, 0)));
+				Pricision_map.insert(make_pair(locpair.first, make_pair(0, 0)));
+				total_R_map.insert(make_pair(locpair.first, make_pair(0, 0)));
+				total_P_map.insert(make_pair(locpair.first, make_pair(0, 0)));
+			}
+			if(Recall_map.find(predict_out) == Recall_map.end()){
+				Recall_map.insert(make_pair(predict_out, make_pair(0, 0)));
+				Pricision_map.insert(make_pair(predict_out, make_pair(0, 0)));
+				total_R_map.insert(make_pair(predict_out, make_pair(0, 0)));
+				total_P_map.insert(make_pair(predict_out, make_pair(0, 0)));
+			}
+
+			if (predict_out == locpair.first){
+                ++correct;
+				Recall_map[predict_out].first++;
+				Pricision_map[predict_out].first++;
+				total_R_map[predict_out].first++;
+				total_P_map[predict_out].first++;
+			}
+            ++count;
+			Recall_map[locpair.first].second++;
+			Pricision_map[predict_out].second++;
+			total_R_map[locpair.first].second++;
+			total_P_map[predict_out].second++;
+        }
+
+        double acc = double(correct)/count;
+		double Recall = 0;
+		double Pricision = 0;
+		for(Maxen_Rtn_map::iterator mite = Pricision_map.begin(); mite != Pricision_map.end(); mite++){
+			if(mite->second.second != 0){
+				Pricision += (double)(mite->second.first)/mite->second.second;
+			}
+		}
+		cout << endl;
+		for(Maxen_Rtn_map::iterator mite = Recall_map.begin(); mite != Recall_map.end(); mite++){
+			double loc_rate = 0;
+			if(mite->second.second != 0){
+				Recall += (double)(mite->second.first)/mite->second.second;
+			}
+		}
+		Recall /= Recall_map.size();
+		Pricision /= Pricision_map.size();
+		ostream.str("");
+		ostream << "--------------------------------------" << endl;
+		ostream << "Precision[" << i + 1 << "]: " << 100 * Pricision  << "%" << endl;
+		ostream << "Recall[" << i + 1 << "]: " << 100 * Recall << "%" << endl;
+		ostream << "F-Score[" << i + 1 << "]: " << 100*2*Recall*Pricision/(Recall+Pricision) << "%" << endl;
+		AppCall::Maxen_Responce_Message(ostream.str().c_str());
+        total_acc += acc;
+		total_Recall += Recall;
+		total_Precision += Pricision;
+		F_Score += 2*Recall*Pricision/(Recall+Pricision);
+    }
+	ostream.str("");
+	ostream << "======Performance on Total=================================" << endl;
+	ostream << "Class size: " << Recall_map.size() << endl;
+	ostream << n << "-fold Cross Validation Accuracy: " << total_acc*100/n << "%" << endl;
+	ostream << n << "-fold Cross Validation Precision: " << total_Precision * 100 / n << "%" << endl;
+	ostream << n << "-fold Cross Validation Recall: " << total_Recall * 100 / n << "%" << endl;
+	ostream << n << "-fold Cross Validation F-Score: " << F_Score * 100 / n << "%" << endl;
+	AppCall::Maxen_Responce_Message(ostream.str().c_str());
+
+	total_Precision = 0;
+	total_Recall = 0;
+
+	ostream.str("");
+	ostream << endl;
+	ostream << endl;
+	ostream << "======Performance on Each TYPE and SUBTYPE=====================" << endl;
+	ostream << "Precision    Correct     Totall      TYPE" << endl;
+	ostream << "-------------------------------------------------------------------------" << endl;
+	AppCall::Maxen_Responce_Message(ostream.str().c_str());
+	
+	ostream.str("");
+	ostream << endl;
+	ostream << "Precision\t\t  Recall\t\t  F-score\t\t  Correct  Total\tTYPE" << endl;
+	ostream << "-------------------------------------------------------------------------" << endl;
+	AppCall::Maxen_Responce_Message(ostream.str().c_str());
+	Maxen_Rtn_map::iterator pmite = total_P_map.begin();
+	for(Maxen_Rtn_map::iterator rmite = total_R_map.begin(); rmite != total_R_map.end(); rmite++, pmite++){
+		if(strcmp(pmite->first.c_str(), rmite->first.c_str())){
+			AppCall::Secretary_Message_Box("Error in MAXEN::cross_validation...", MB_OK);
+		}
+		double loc_pre_rate = 0;
+		double loc_rec_rate = 0;
+		double loc_Fsc_rate = 0;
+		if(pmite->second.second != 0){
+			loc_pre_rate = (double)(pmite->second.first)/pmite->second.second;
+			if(strcmp(pmite->first.c_str(), NEGETIVE)){
+				total_Precision += (double)(pmite->second.first)/pmite->second.second;
+			}
+		}
+		if(rmite->second.second != 0){
+			loc_rec_rate = (double)(rmite->second.first)/rmite->second.second;
+			if(strcmp(rmite->first.c_str(), NEGETIVE)){
+				total_Recall += (double)(rmite->second.first)/rmite->second.second;
+			}
+		}
+		if((loc_pre_rate+loc_rec_rate) > 0){
+			loc_Fsc_rate = 2*loc_pre_rate*loc_rec_rate/(loc_pre_rate+loc_rec_rate);
+		}
+		else{
+			loc_Fsc_rate = 0;
+		}
+
+		display("%.4f%%\t  %.4f%%\t  %.4f%%\t  %3d\t  %3d\t  %s", 100*loc_pre_rate, 100*loc_rec_rate, 100*loc_Fsc_rate, rmite->second.first, rmite->second.second, rmite->first.c_str());
+	}
+	size_t Number_of_Class = 0;
+	for(Maxen_Rtn_map::iterator mmite = total_R_map.begin(); mmite != total_R_map.end(); mmite++){
+		if(0 != mmite->second.second){
+			Number_of_Class++;
+		}
+	}
+	if((total_R_map.find(NEGETIVE) != total_R_map.end()) && (0 != total_R_map[NEGETIVE].second)){
+			Number_of_Class--;
+	}
+
+	double Pricision = total_Precision * 100 / Number_of_Class;
+	double Recall = total_Recall * 100 / Number_of_Class;
+	if(Pricision == 0 && Recall ==0){
+		F_Score = 0;
+	}
+	else{
+		F_Score = 2*Pricision*Recall/(Pricision+Recall);
+	}
+	ostream.str("");
+	ostream << endl;
+	ostream << "======Performance on Positive Cases=================================" << endl;
+	double loc_P, loc_R;
+	if(0 == total_P_map[NEGETIVE].second){
+		loc_P = 0;
+	}
+	else{
+		loc_P = (double)total_P_map[NEGETIVE].first/total_P_map[NEGETIVE].second;
+	}
+	if(0 == total_R_map[NEGETIVE].second){
+		loc_R = 0;
+	}
+	else{
+		loc_R = (double)total_R_map[NEGETIVE].first/total_R_map[NEGETIVE].second;
+	}
+	ostream << "Precision of \"OTHER\": " << loc_P << endl;
+	ostream << "Recall of \"OTHER\": " << loc_R << endl;
+	if(loc_P+loc_R){
+		ostream << "F score of \"OTHER\": " << 2*loc_P*loc_R/(loc_P+loc_R) << endl;
+	}
+	else{
+		ostream << "F score of \"OTHER\": " << 0 << endl;
+	}
+	ostream << endl;
+	ostream << "Class size: " << Number_of_Class << endl;
+	ostream << n << "-fold Cross Validation Precision: " << Pricision << "%" << endl;
+	ostream << n << "-fold Cross Validation Recall: " << Recall << "%" << endl;
+	ostream << n << "-fold Cross Validation F-Score: " << F_Score << "%" << endl;
+
+	AppCall::Maxen_Responce_Message_with_Save(ostream.str().c_str());
+}
 
 // perform n-Fold cross_validation, results are printed to stdout
 void MAXEN::cross_validation(FeatureVctor& v, size_t n, int iter, const string& method, double gaussian, bool random) 
@@ -753,13 +1064,14 @@ void MAXEN::cross_validation(FeatureVctor& v, size_t n, int iter, const string& 
 }
 
 
-void MAXEN::Get_Training_Cases_Model_Parameter(vector<pair<me_context_type, me_outcome_type> >& v) 
+void MAXEN::Get_Training_Cases_Model_Parameter(FeatureVctor& v) 
 {
 		MaxentModel m;
         m.begin_add_event();
-        m.add_events(v.begin(), v.end());
+        m.add_FeatureVctor_events(v.begin(), v.end());
         m.end_add_event();
         m.train(1, "lbfgs", 0); 
+		AppCall::Maxen_Responce_Message("\n\nParameter is collected....");
 }
 void MAXEN::Maxen_Training_With_Heldout(size_t heldout, vector<pair<me_context_type, me_outcome_type> >& training_case_v)
 {
@@ -790,7 +1102,8 @@ void MAXEN::Maxen_Training_With_Heldout(size_t heldout, vector<pair<me_context_t
 
 
 }
-void MAXEN::Read_CSmaxent_Training_Data(const char* FilePath, FeatureVctor& Training_v)
+
+void MAXEN::Read_CSmaxent_Training_Data(const char* FilePath, bool TYPE_Flag, FeatureVctor& Training_v)
 {
 	ifstream in(FilePath);
 	if(in.bad())
@@ -818,13 +1131,19 @@ void MAXEN::Read_CSmaxent_Training_Data(const char* FilePath, FeatureVctor& Trai
 			pCRDC_Case_v->second.push_back(make_pair(getlineBuf, Cnt));
 			instream.getline(getlineBuf, MAX_SENTENCE,';');
 		}
-		in.getline(getlineBuf, MAX_SENTENCE, '\n');
-		pCRDC_Case_v->first = getlineBuf;
+		in.getline(getlineBuf, MAX_SENTENCE, ';');
+		if(TYPE_Flag){
+			pCRDC_Case_v->first = getlineBuf;
+			in.getline(getlineBuf, MAX_SENTENCE, '\n');
+		}
+		else{
+			in.getline(getlineBuf, MAX_SENTENCE, '\n');
+			pCRDC_Case_v->first = getlineBuf;
+		}
 		Training_v.push_back(pCRDC_Case_v);
 	}
 	in.close();
 }
-
 
 void MAXEN::Generate_Training_Matrix(const char* openpath, const char* savepath)
 {
